@@ -23,12 +23,13 @@ configParser = ConfParser.RawConfigParser()
 configParser.read(configFilePath)
 
 animaDir = configParser.get("anima-scripts",'anima')
+animaDataDir = configParser.get("anima-scripts",'extra-data-root')
 animaScriptsDir = configParser.get("anima-scripts",'anima-scripts-root')
 
 # Argument parsing
 parser = argparse.ArgumentParser(description="Prepares DWI for model estimation: denoising, brain masking, distortion correction")
-parser.add_argument('-b', '--bval', type=str, default="", help="DWI b-values file")
-parser.add_argument('-g', '--grad', type=str, default="", help="DWI gradients file")
+parser.add_argument('-b', '--bval', type=str, required=True, help="DWI b-values file")
+parser.add_argument('-g', '--grad', type=str, required=True, help="DWI gradients file")
 parser.add_argument('-r', '--reverse', type=str, default="", help="Reversed PED B0 image")
 parser.add_argument('-d', '--direction', type=int, default=1, help="PED direction (0: x, 1: y, 2: z)")
 parser.add_argument('--no-disto-correction', action='store_true', help="Do not perform distortion correction")
@@ -50,14 +51,16 @@ if os.path.splitext(dwiImage)[1] == '.gz' :
 tmpDWIImagePrefix = os.path.join(tmpFolder, os.path.basename(dwiImagePrefix))
 
 outputImage = dwiImage
+outputBVec = args.grad
 # Distortion correction first
 # Eddy current first
 if args.no_eddy_correction is False :
-	eddyCorrectionCommand = [animaDir + "animaEddyCurrentCorrection","-i",dwiImage,"-o",tmpDWIImagePrefix + "_eddy_corrected.nrrd", \
-		"-d",str(args.direction)]
+	eddyCorrectionCommand = [animaDir + "animaEddyCurrentCorrection","-i",dwiImage,"-I",args.grad,"-o",tmpDWIImagePrefix + "_eddy_corrected.nrrd", \
+		"-O",tmpDWIImagePrefix + "_eddy_corrected.bvec","-d",str(args.direction)]
 	call(eddyCorrectionCommand)
 
 	outputImage = tmpDWIImagePrefix + "_eddy_corrected.nrrd"
+	outputBVec = tmpDWIImagePrefix + "_eddy_corrected.bvec"
 
 # Extract brain from T1 image if present (used for further processing)
 if (args.no_disto_correction is False or args.no_brain_masking is False) and not args.t1 == "" :
@@ -70,11 +73,17 @@ if args.no_disto_correction is False :
 		b0ExtractCommand = [animaDir + "animaCropImage","-i",outputImage,"-t","0","-T","0","-o",tmpDWIImagePrefix + "_B0.nrrd"]
 		call(b0ExtractCommand)
 
+		idGenCommand = [animaDir + "animaTransformSerieXmlGenerator","-i",animaDataDir + "id.txt","-o",tmpFolder + "id.xml"]
+		call(idGenCommand)
+
+		resampleB0PACommand = [animaDir + "animaApplyTransformSerie","-i",args.reverse,"-t",tmpFolder + "id.xml","-o",tmpDWIImagePrefix + "_B0_Reverse.nrrd","-g",tmpDWIImagePrefix + "_B0.nrrd"]
+		call(resampleB0PACommand)
+
 		initCorrectionCommand = [animaDir + "animaDistortionCorrection","-s","2","-d",str(args.direction), \
-			"-f",tmpDWIImagePrefix + "_B0.nrrd","-b",args.reverse,"-o",tmpDWIImagePrefix + "_init_correction_tr.nrrd"]
+			"-f",tmpDWIImagePrefix + "_B0.nrrd","-b",tmpDWIImagePrefix + "_B0_Reverse.nrrd","-o",tmpDWIImagePrefix + "_init_correction_tr.nrrd"]
 		call(initCorrectionCommand)
 		bmCorrectionCommand = [animaDir + "animaBMDistortionCorrection","-f",tmpDWIImagePrefix + "_B0.nrrd", \
-			"-b",args.reverse,"-o",tmpDWIImagePrefix + "_B0_corrected.nrrd","-i",tmpDWIImagePrefix + "_init_correction_tr.nrrd", \
+			"-b",tmpDWIImagePrefix + "_B0_Reverse.nrrd","-o",tmpDWIImagePrefix + "_B0_corrected.nrrd","-i",tmpDWIImagePrefix + "_init_correction_tr.nrrd", \
 			"--bs","3","-s","10","-d",str(args.direction),"-O",tmpDWIImagePrefix + "_B0_correction_tr.nrrd"]
 		call(bmCorrectionCommand)
 
@@ -107,11 +116,10 @@ if args.no_disto_correction is False :
 		call(applyCorrectionCommand)
 
 # Then re-orient image to be axial first
-dwiReorientCommand = [animaDir + "animaConvertImage","-i",outputImage,"-o",tmpDWIImagePrefix + "_or.nrrd","-R","AXIAL"]
-if not (args.grad == "") :
-	dwiReorientCommand.extend(["-g",args.grad])
+dwiReorientCommand = [animaDir + "animaConvertImage","-i",outputImage,"-o",tmpDWIImagePrefix + "_or.nrrd","-R","AXIAL","-g",outputBVec]
 call(dwiReorientCommand)
 outputImage = tmpDWIImagePrefix + "_or.nrrd"
+outputBVec = tmpDWIImagePrefix + "_or.bvec"
 
 # Then perform denoising
 if args.no_denoising is False :
@@ -147,7 +155,7 @@ if args.no_brain_masking is False :
 		call(command)
 
 		command = [animaDir + "animaApplyTransformSerie","-i",T1Prefix + "_brainMask.nrrd","-t",tmpT1Prefix + "_rig_tr.xml","-o",dwiImagePrefix + "_brainMask.nrrd","-g",tmpDWIImagePrefix + "_forBrainExtract.nrrd","-n","nearest"]
-		call(command)		
+		call(command)
 
 	brainExtractionCommand = [animaDir + "animaMaskImage","-i",outputImage,"-m",dwiImagePrefix + "_brainMask.nrrd", \
 		"-o",tmpDWIImagePrefix + "_masked.nrrd"]
@@ -156,16 +164,14 @@ if args.no_brain_masking is False :
 	outputImage = tmpDWIImagePrefix + "_masked.nrrd"
 
 shutil.copy(outputImage,dwiImagePrefix + "_preprocessed.nrrd")
-if not (args.grad == "") :
-	shutil.copy(tmpDWIImagePrefix + "_or.bvec",dwiImagePrefix + "_preprocessed.bvec")
+shutil.copy(outputBVec,dwiImagePrefix + "_preprocessed.bvec")
 
 # Estimate tensors if files were provided
-if (not (args.grad == "")) and (not (args.bval == "")) :
-	dtiEstimationCommand = [animaDir + "animaDTIEstimator", "-i", outputImage, "-o", dwiImagePrefix + "_Tensors.nrrd", \
-		"-O", dwiImagePrefix + "_Tensors_B0.nrrd", "-N", dwiImagePrefix + "_Tensors_NoiseVariance.nrrd", \
-		"-g", tmpDWIImagePrefix + "_or.bvec", "-b", args.bval]
-	if args.no_brain_masking is False :
-		dtiEstimationCommand += ["-m", dwiImagePrefix + "_brainMask.nrrd"]
-	call(dtiEstimationCommand)
+dtiEstimationCommand = [animaDir + "animaDTIEstimator", "-i", outputImage, "-o", dwiImagePrefix + "_Tensors.nrrd", \
+	"-O", dwiImagePrefix + "_Tensors_B0.nrrd", "-N", dwiImagePrefix + "_Tensors_NoiseVariance.nrrd", \
+	"-g", outputBVec, "-b", args.bval]
+if args.no_brain_masking is False :
+	dtiEstimationCommand += ["-m", dwiImagePrefix + "_brainMask.nrrd"]
+call(dtiEstimationCommand)
 
 shutil.rmtree(tmpFolder)
