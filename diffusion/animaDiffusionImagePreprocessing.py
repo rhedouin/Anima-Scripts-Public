@@ -90,8 +90,6 @@ if args.no_disto_correction is False :
 		applyCorrectionCommand = [animaDir + "animaApplyDistortionCorrection","-f",outputImage,"-t", \
 			tmpDWIImagePrefix + "_B0_correction_tr.nrrd","-o",tmpDWIImagePrefix + "_corrected.nrrd"]
 		call(applyCorrectionCommand)
-
-		outputImage = tmpDWIImagePrefix + "_corrected.nrrd"
 	elif not (args.t1 == "") :
 		b0ExtractCommand = [animaDir + "animaCropImage","-i",outputImage,"-t","0","-T","0","-o",tmpDWIImagePrefix + "_B0.nrrd"]
 		call(b0ExtractCommand)
@@ -114,6 +112,8 @@ if args.no_disto_correction is False :
 		applyCorrectionCommand = [animaDir + "animaApplyDistortionCorrection","-f",outputImage,"-t", \
 			tmpDWIImagePrefix + "_B0_correction_tr.nrrd","-o",tmpDWIImagePrefix + "_corrected.nrrd"]
 		call(applyCorrectionCommand)
+
+	outputImage = tmpDWIImagePrefix + "_corrected.nrrd"
 
 # Then re-orient image to be axial first
 dwiReorientCommand = [animaDir + "animaConvertImage","-i",outputImage,"-o",tmpDWIImagePrefix + "_or.nrrd","-R","AXIAL","-g",outputBVec]
