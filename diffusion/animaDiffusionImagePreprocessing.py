@@ -148,7 +148,7 @@ if args.no_brain_masking is False :
 
 		tmpT1Prefix = os.path.join(tmpFolder, os.path.basename(T1Prefix))
 
-		t1RegistrationCommand = [animaDir + "animaPyramidalBMRegistration","-r",tmpDWIImagePrefix + "_forBrainExtract.nrrd","-m",args.t1,"-o",tmpT1Prefix + "_rig.nrrd","-O",tmpT1Prefix + "_rig_tr.txt","-p","4","-l","1","--sp","2","-I"]
+		t1RegistrationCommand = [animaDir + "animaPyramidalBMRegistration","-r",tmpDWIImagePrefix + "_forBrainExtract.nrrd","-m",T1Prefix + "_masked.nrrd","-o",tmpT1Prefix + "_rig.nrrd","-O",tmpT1Prefix + "_rig_tr.txt","-p","4","-l","1","--sp","2","-I"]
 		call(t1RegistrationCommand)
 
 		command = [animaDir + "animaTransformSerieXmlGenerator","-i",tmpT1Prefix + "_rig_tr.txt","-o",tmpT1Prefix + "_rig_tr.xml"]
