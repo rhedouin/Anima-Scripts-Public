@@ -87,24 +87,27 @@ if (args.no_model_simplification is False) and (args.model_selection is False) :
 	mergeDataFile = open(dwiImagePrefix + "_MCM_List.txt",'w')
 	mergeDataAICFile = open(dwiImagePrefix + "_MCM_AIC_List.txt",'w')
 	mergeDataB0File = open(dwiImagePrefix + "_MCM_B0_List.txt",'w')
+	mergeDataS2File = open(dwiImagePrefix + "_MCM_S2_List.txt", 'w')
 
 	for numCompartments in range(0,args.num_compartments+1) :
 		outputPrefix = dwiImagePrefix + "_MCM_N" + str(numCompartments)
-		estimationCommand = estimationCommandWithInputs + ["-o",outputPrefix + ".mcm","-a",outputPrefix + "_aic.nii.gz","--out-b0",outputPrefix + "_B0.nii.gz","-n",str(numCompartments)]
+		estimationCommand = estimationCommandWithInputs + ["-o",outputPrefix + ".mcm","-a",outputPrefix + "_aic.nrrd","--out-b0",outputPrefix + "_B0.nrrd","--out-sig",outputPrefix + "_S2.nrrd","-n",str(numCompartments)]
 		call(estimationCommand)
 
 		mergeDataFile.write(outputPrefix + ".mcm\n")
-		mergeDataAICFile.write(outputPrefix + "_aic.nii.gz\n")
-		mergeDataB0File.write(outputPrefix + "_B0.nii.gz\n")
+		mergeDataAICFile.write(outputPrefix + "_aic.nrrd\n")
+		mergeDataB0File.write(outputPrefix + "_B0.nrrd\n")
+		mergeDataS2File.write(outputPrefix + "_S2.nrrd\n")
 
 	mergeDataFile.close()
 	mergeDataAICFile.close()
 	mergeDataB0File.close()
+	mergeDataS2File.close()
 
 	averagingCommand = [animaDir + "animaMCMModelAveraging","-i", dwiImagePrefix + "_MCM_List.txt","-b", \
-		dwiImagePrefix + "_MCM_B0_List.txt","-a", dwiImagePrefix + "_MCM_AIC_List.txt","-o", \
-		dwiImagePrefix + "_MCM_avg.mcm","-O", dwiImagePrefix + "_MCM_B0_avg.mcm","-m", \
-		dwiImagePrefix + "_MCM_mose_avg.nii.gz","-C"]
+		dwiImagePrefix + "_MCM_B0_List.txt", "-n", dwiImagePrefix + "_MCM_S2_List.txt", "-a", dwiImagePrefix + "_MCM_AIC_List.txt","-o", \
+		dwiImagePrefix + "_MCM_avg.mcm","-O", dwiImagePrefix + "_MCM_B0_avg.nrrd","-N", dwiImagePrefix + "_MCM_S2_avg.nrrd", "-m", \
+		dwiImagePrefix + "_MCM_mose_avg.nrrd","-C"]
 	call(averagingCommand)
 
 else :
@@ -113,9 +116,9 @@ else :
 	else :
 		outputPrefix = dwiImagePrefix + "_MCM_MS" + str(args.num_compartments)
 
-	estimationCommand = estimationCommandWithInputs + ["-o",outputPrefix + ".mcm","-a",outputPrefix + "_aic.nii.gz","--out-b0",outputPrefix + "_B0.nii.gz","-n",str(args.num_compartments)]
+	estimationCommand = estimationCommandWithInputs + ["-o",outputPrefix + ".mcm","-a",outputPrefix + "_aic.nrrd","--out-b0",outputPrefix + "_B0.nrrd","--out-sig",outputPrefix + "_S2.nrrd","-n",str(args.num_compartments)]
 
 	if args.no_model_simplification is False :
-		estimationCommand += ["--out-mose",outputPrefix + "_mose.nii.gz"]
+		estimationCommand += ["--out-mose",outputPrefix + "_mose.nrrd"]
 
 	call(estimationCommand)
