@@ -4,6 +4,8 @@
 import sys
 import argparse
 import tempfile
+import pydicom
+import numpy as np
 
 if sys.version_info[0] > 2 :
 	import configparser as ConfParser
@@ -32,6 +34,7 @@ parser.add_argument('-b', '--bval', type=str, required=True, help="DWI b-values 
 parser.add_argument('-g', '--grad', type=str, required=True, help="DWI gradients file")
 parser.add_argument('-r', '--reverse', type=str, default="", help="Reversed PED B0 image")
 parser.add_argument('-d', '--direction', type=int, default=1, help="PED direction (0: x, 1: y, 2: z)")
+parser.add_argument('-D', '--dicom', type=str, default="", help="Dicom file to put dcm2nii bvec file to real coordinates")
 parser.add_argument('--no-disto-correction', action='store_true', help="Do not perform distortion correction")
 parser.add_argument('--no-denoising', action='store_true', help="Do not perform NL-Means denoising")
 parser.add_argument('-t', '--t1', type=str, default="", help="T1 image for brain masking (B0 used if not provided)")
@@ -52,10 +55,29 @@ tmpDWIImagePrefix = os.path.join(tmpFolder, os.path.basename(dwiImagePrefix))
 
 outputImage = dwiImage
 outputBVec = args.grad
+
+if not (args.dicom == "") and not (args.grad == "") :
+	# adapted from http://neurohut.blogspot.fr/2015/11/how-to-extract-bval-bvec-from-dicom.html
+	# The goal here is to ensure the bvec file extracted from dcm2nii (highly recommended)
+	# is well put back in real coordinates. This works only for Siemens scanners though as far as I know
+	image = pydicom.read_file(args.dicom)
+	img_plane_position = image[0x0020, 0x0037].value
+	V1 = np.array([float(img_plane_position[0]),float(img_plane_position[1]),float(img_plane_position[2])])
+	V2 = np.array([float(img_plane_position[3]),float(img_plane_position[4]),float(img_plane_position[5])])
+	V3 = np.cross(V1, V2)
+
+	orMatrix = np.array([V1,V2,V3])
+
+	bvecs = np.loadtxt(args.grad)
+	bvecs_corrected = np.dot(orMatrix.transpose(),bvecs)
+
+	np.savetxt(tmpDWIImagePrefix + "_real.bvec", bvecs_corrected, fmt="%.12f")
+	outputBVec = tmpDWIImagePrefix + "_real.bvec"
+
 # Distortion correction first
 # Eddy current first
 if args.no_eddy_correction is False :
-	eddyCorrectionCommand = [animaDir + "animaEddyCurrentCorrection","-i",dwiImage,"-I",args.grad,"-o",tmpDWIImagePrefix + "_eddy_corrected.nrrd", \
+	eddyCorrectionCommand = [animaDir + "animaEddyCurrentCorrection","-i",dwiImage,"-I",outputBVec,"-o",tmpDWIImagePrefix + "_eddy_corrected.nrrd", \
 		"-O",tmpDWIImagePrefix + "_eddy_corrected.bvec","-d",str(args.direction)]
 	call(eddyCorrectionCommand)
 
@@ -73,10 +95,12 @@ if args.no_disto_correction is False :
 		b0ExtractCommand = [animaDir + "animaCropImage","-i",outputImage,"-t","0","-T","0","-o",tmpDWIImagePrefix + "_B0.nrrd"]
 		call(b0ExtractCommand)
 
-		idGenCommand = [animaDir + "animaTransformSerieXmlGenerator","-i",animaDataDir + "id.txt","-o",tmpFolder + "id.xml"]
+		idTrsfName = os.path.join(animaDataDir,"id.txt")
+		idTrsfXmlName = os.path.join(tmpFolder,"id.xml")
+		idGenCommand = [animaDir + "animaTransformSerieXmlGenerator","-i",idTrsfName,"-o",idTrsfXmlName]
 		call(idGenCommand)
 
-		resampleB0PACommand = [animaDir + "animaApplyTransformSerie","-i",args.reverse,"-t",tmpFolder + "id.xml","-o",tmpDWIImagePrefix + "_B0_Reverse.nrrd","-g",tmpDWIImagePrefix + "_B0.nrrd"]
+		resampleB0PACommand = [animaDir + "animaApplyTransformSerie","-i",args.reverse,"-t",idTrsfXmlName,"-o",tmpDWIImagePrefix + "_B0_Reverse.nrrd","-g",tmpDWIImagePrefix + "_B0.nrrd"]
 		call(resampleB0PACommand)
 
 		initCorrectionCommand = [animaDir + "animaDistortionCorrection","-s","2","-d",str(args.direction), \
@@ -116,10 +140,9 @@ if args.no_disto_correction is False :
 	outputImage = tmpDWIImagePrefix + "_corrected.nrrd"
 
 # Then re-orient image to be axial first
-dwiReorientCommand = [animaDir + "animaConvertImage","-i",outputImage,"-o",tmpDWIImagePrefix + "_or.nrrd","-R","AXIAL","-g",outputBVec]
+dwiReorientCommand = [animaDir + "animaConvertImage","-i",outputImage,"-o",tmpDWIImagePrefix + "_or.nrrd","-R","AXIAL"]
 call(dwiReorientCommand)
 outputImage = tmpDWIImagePrefix + "_or.nrrd"
-outputBVec = tmpDWIImagePrefix + "_or.bvec"
 
 # Then perform denoising
 if args.no_denoising is False :
@@ -170,8 +193,10 @@ shutil.copy(outputBVec,dwiImagePrefix + "_preprocessed.bvec")
 dtiEstimationCommand = [animaDir + "animaDTIEstimator", "-i", outputImage, "-o", dwiImagePrefix + "_Tensors.nrrd", \
 	"-O", dwiImagePrefix + "_Tensors_B0.nrrd", "-N", dwiImagePrefix + "_Tensors_NoiseVariance.nrrd", \
 	"-g", outputBVec, "-b", args.bval]
+
 if args.no_brain_masking is False :
 	dtiEstimationCommand += ["-m", dwiImagePrefix + "_brainMask.nrrd"]
+
 call(dtiEstimationCommand)
 
 shutil.rmtree(tmpFolder)
