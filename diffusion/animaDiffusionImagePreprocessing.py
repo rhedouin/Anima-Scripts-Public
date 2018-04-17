@@ -6,6 +6,7 @@ import argparse
 import tempfile
 import pydicom
 import numpy as np
+import struct
 
 if sys.version_info[0] > 2 :
 	import configparser as ConfParser
@@ -29,12 +30,12 @@ animaDataDir = configParser.get("anima-scripts",'extra-data-root')
 animaScriptsDir = configParser.get("anima-scripts",'anima-scripts-root')
 
 # Argument parsing
-parser = argparse.ArgumentParser(description="Prepares DWI for model estimation: denoising, brain masking, distortion correction")
+parser = argparse.ArgumentParser(description="Prepares DWI for model estimation: gradients reworking on Siemens based on dicoms, denoising, brain masking, distortion correction.")
 parser.add_argument('-b', '--bval', type=str, required=True, help="DWI b-values file")
-parser.add_argument('-g', '--grad', type=str, required=True, help="DWI gradients file")
+parser.add_argument('-g', '--grad', type=str, default="", help="DWI gradients file")
 parser.add_argument('-r', '--reverse', type=str, default="", help="Reversed PED B0 image")
 parser.add_argument('-d', '--direction', type=int, default=1, help="PED direction (0: x, 1: y, 2: z)")
-parser.add_argument('-D', '--dicom', type=str, default="", help="Dicom file to put dcm2nii bvec file to real coordinates")
+parser.add_argument('-D', '--dicom', type=str, nargs='+', default="", help="Dicom file to put dcm2nii bvec file to real coordinates")
 parser.add_argument('--no-disto-correction', action='store_true', help="Do not perform distortion correction")
 parser.add_argument('--no-denoising', action='store_true', help="Do not perform NL-Means denoising")
 parser.add_argument('-t', '--t1', type=str, default="", help="T1 image for brain masking (B0 used if not provided)")
@@ -58,9 +59,10 @@ outputBVec = args.grad
 
 if not (args.dicom == "") and not (args.grad == "") :
 	# adapted from http://neurohut.blogspot.fr/2015/11/how-to-extract-bval-bvec-from-dicom.html
-	# The goal here is to ensure the bvec file extracted from dcm2nii (highly recommended)
-	# is well put back in real coordinates. This works only for Siemens scanners though as far as I know
-	image = pydicom.read_file(args.dicom)
+	# The goal here is to ensure the bvec file extracted from dcm2nii is well put 
+	# back in real coordinates. This assumes dcm2nii worked for gradient extraction which is not always the case. 
+	# If not, use the dicom folder option In any case, it works only for Siemens scanners though as far as I know
+	image = pydicom.read_file(args.dicom[0])
 	img_plane_position = image[0x0020, 0x0037].value
 	V1 = np.array([float(img_plane_position[0]),float(img_plane_position[1]),float(img_plane_position[2])])
 	V2 = np.array([float(img_plane_position[3]),float(img_plane_position[4]),float(img_plane_position[5])])
@@ -73,6 +75,34 @@ if not (args.dicom == "") and not (args.grad == "") :
 
 	np.savetxt(tmpDWIImagePrefix + "_real.bvec", bvecs_corrected, fmt="%.12f")
 	outputBVec = tmpDWIImagePrefix + "_real.bvec"
+
+elif not (args.dicom == "") and (args.grad == "") :
+	bvecs_corrected = []
+	for dicom_file in sorted(args.dicom) :
+		image = pydicom.read_file(dicom_file)
+		bval = float(image[0x0019, 0x100c].value)
+
+		if image[0x0019, 0x100d].value == 'NONE' or bval == 0 :
+			bvec = [0, 0, 0]
+		else :
+			buffer = struct.unpack('ddd', image[0x0019, 0x100e].value)
+			img_plane_position = image[0x0020, 0x0037].value
+			vec = np.array(buffer)
+			V1 = np.array([float(img_plane_position[0]), float(img_plane_position[1]), float(img_plane_position[2])])
+			V2 = np.array([float(img_plane_position[3]), float(img_plane_position[4]), float(img_plane_position[5])])
+			V3 = np.cross(V1, V2)
+
+			bvec = np.zeros(3)
+			bvec = vec
+
+		bvecs_corrected.append(bvec)
+
+	bvecs_corrected = np.array(bvecs_corrected)
+	np.savetxt(tmpDWIImagePrefix + "_real.bvec", bvecs_corrected.transpose(), fmt="%.12f")
+	outputBVec = tmpDWIImagePrefix + "_real.bvec"
+
+if outputBVec == "" :
+	sys.exit("Gradient file needs to be provided (either through Dicom folder or through dcm2nii)")
 
 # Distortion correction first
 # Eddy current first
@@ -114,6 +144,8 @@ if args.no_disto_correction is False :
 		applyCorrectionCommand = [animaDir + "animaApplyDistortionCorrection","-f",outputImage,"-t", \
 			tmpDWIImagePrefix + "_B0_correction_tr.nrrd","-o",tmpDWIImagePrefix + "_corrected.nrrd"]
 		call(applyCorrectionCommand)
+
+		outputImage = tmpDWIImagePrefix + "_corrected.nrrd"
 	elif not (args.t1 == "") :
 		b0ExtractCommand = [animaDir + "animaCropImage","-i",outputImage,"-t","0","-T","0","-o",tmpDWIImagePrefix + "_B0.nrrd"]
 		call(b0ExtractCommand)
@@ -137,7 +169,7 @@ if args.no_disto_correction is False :
 			tmpDWIImagePrefix + "_B0_correction_tr.nrrd","-o",tmpDWIImagePrefix + "_corrected.nrrd"]
 		call(applyCorrectionCommand)
 
-	outputImage = tmpDWIImagePrefix + "_corrected.nrrd"
+		outputImage = tmpDWIImagePrefix + "_corrected.nrrd"
 
 # Then re-orient image to be axial first
 dwiReorientCommand = [animaDir + "animaConvertImage","-i",outputImage,"-o",tmpDWIImagePrefix + "_or.nrrd","-R","AXIAL"]
