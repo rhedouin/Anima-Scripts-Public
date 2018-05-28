@@ -4,7 +4,6 @@ from nipype import Node, Workflow, MapNode
 from nipype.interfaces import anima
 import nipype.interfaces.utility as niu
 
-
 def create_atlas_based_brain_extraction_workflow(name='anima_brain_extraction',
                                                  temp_rigid_img_file='rigid_data.nrrd',
                                                  temp_rigid_trsf='rigid_data_tr.txt',
