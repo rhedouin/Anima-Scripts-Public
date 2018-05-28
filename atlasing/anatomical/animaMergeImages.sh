@@ -53,7 +53,7 @@ else
 	animaAverageImages -i refIms.txt -o tempDir/IntensityAverageDiv.nii.gz
 fi
 
-animaAverageImages -i sum.txt -o tempDir/sum.nii.gz -V
+animaAverageImages -i sum.txt -o tempDir/sum.nii.gz
 
 animaTransformSerieXmlGenerator -i tempDir/sum.nii.gz -I 1 -o tempDir/trsf.xml
 

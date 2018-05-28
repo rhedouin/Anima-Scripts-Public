@@ -43,12 +43,12 @@ do
 	echo residualDir/${prefixDTI}_${a}_bal_tr.nii.gz >> sum.txt
 done
 
-animaAverageImages -i refDTIs.txt -o tempDir/DTIAverageDiv.nii.gz -m masksTens.txt -V
+animaAverageImages -i refDTIs.txt -o tempDir/DTIAverageDiv.nii.gz -m masksTens.txt
 animaAverageImages -i masksTens.txt -o tempDir/meanMasks_${k}.nii.gz
 animaThrImage -i tempDir/meanMasks_${k}.nii.gz -o tempDir/thrMasks_${k}.nii.gz -t 0.25
 animaMaskImage -i tempDir/DTIAverageDiv.nii.gz -m tempDir/thrMasks_${k}.nii.gz -o tempDir/DTIAverageDiv.nii.gz
 
-animaAverageImages -i sum.txt -o tempDir/sum.nii.gz -V
+animaAverageImages -i sum.txt -o tempDir/sum.nii.gz
 
 animaTransformSerieXmlGenerator -i tempDir/sum.nii.gz -I 1 -o tempDir/trsf.xml
 
