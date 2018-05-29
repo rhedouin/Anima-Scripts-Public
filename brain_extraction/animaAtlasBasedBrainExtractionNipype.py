@@ -37,7 +37,6 @@ from anima_workflows import atlasBasedBrainExtraction as wf_creator
 if len(sys.argv) < 2:
     print('Computes the brain mask of images given in input by registering a known atlas on it. Their output is prefix_brainMask.nrrd and prefix_masked.nrrd.')
     quit()
-    
 
 atlasImage = os.path.join(animaExtraDataDir, "icc_atlas/Reference_T1.nrrd")
 iccImage = os.path.join(animaExtraDataDir, "icc_atlas/BrainMask.nrrd")
@@ -45,12 +44,15 @@ iccImage = os.path.join(animaExtraDataDir, "icc_atlas/BrainMask.nrrd")
 for brainImage in sys.argv[1:]:
     print("Brain masking image: " + brainImage)
 
+    brainImage = os.path.abspath(brainImage)
     # Get floating image prefix
     brainImagePrefix = os.path.splitext(os.path.basename(brainImage))[0]
     brainImageDir = os.path.dirname(brainImage)
+
     if os.path.splitext(brainImage)[1] == '.gz':
         brainImagePrefix = os.path.splitext(brainImagePrefix)[0]
 
+    print(brainImageDir)
     wf = wf_creator.create_atlas_based_brain_extraction_workflow(name='anima_brain_extraction_' + brainImagePrefix)
     wf.base_dir = brainImageDir
 
