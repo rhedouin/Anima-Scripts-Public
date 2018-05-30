@@ -10,6 +10,7 @@ def create_anatomical_non_linear_registration_workflow(name='anima_non_linear_re
                                                        dense_search_radius=1,
                                                        dense_pyramid_levels=3,
                                                        dense_last_pyramid_level=0,
+                                                       symmetric_registration=0,
                                                        temp_rigid_img_file='rigid_data.nrrd',
                                                        temp_rigid_trsf='rigid_data_tr.txt',
                                                        temp_affine_img_file='affine_data.nrrd',
@@ -43,18 +44,21 @@ def create_anatomical_non_linear_registration_workflow(name='anima_non_linear_re
     # Rigid registration process
     rigid_reg = Node(interface=anima.PyramidalBMRegistration(block_spacing=linear_block_spacing,
                                                              pyramid_levels=linear_pyramid_levels,
+                                                             symmetric_registration=symmetric_registration,
                                                              last_pyramid_level=linear_last_pyramid_level),
                      name='rigid_reg')
 
     # Affine registration process
     affine_reg = Node(interface=anima.PyramidalBMRegistration(block_spacing=linear_block_spacing,
                                                               pyramid_levels=linear_pyramid_levels,
+                                                              symmetric_registration=symmetric_registration,
                                                               last_pyramid_level=linear_last_pyramid_level,
                                                               out_transform_type=2), name='affine_reg')
 
     # Dense registration process
     dense_reg = Node(interface=anima.DenseSVFBMRegistration(block_search_radius=dense_search_radius,
                                                             pyramid_levels=dense_pyramid_levels,
+                                                            symmetric_registration=symmetric_registration,
                                                             last_pyramid_level=dense_last_pyramid_level),
                      name='dense_reg')
 
