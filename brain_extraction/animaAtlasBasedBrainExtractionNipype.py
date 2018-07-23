@@ -32,7 +32,7 @@ anima_env["PATH"] += os.pathsep + animaDir
 
 sys.path.append(animaScriptsDir)
 
-from anima_workflows import atlasBasedBrainExtraction as wf_creator
+from workflows import atlasBasedBrainExtraction as wf_creator
 
 if len(sys.argv) < 2:
     print('Computes the brain mask of images given in input by registering a known atlas on it. Their output is prefix_brainMask.nrrd and prefix_masked.nrrd.')
