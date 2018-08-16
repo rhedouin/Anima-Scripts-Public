@@ -232,7 +232,7 @@ if args.no_brain_masking is False:
         t1RegistrationCommand = [animaDir + "animaPyramidalBMRegistration", "-r",
                                  tmpDWIImagePrefix + "_forBrainExtract.nrrd", "-m", T1Prefix + "_masked.nrrd", "-o",
                                  tmpT1Prefix + "_rig.nrrd", "-O", tmpT1Prefix + "_rig_tr.txt", "-p", "4", "-l", "1",
-                                 "--sp", "2", "-I"]
+                                 "--sp", "2", "-I", "0"]
         call(t1RegistrationCommand)
 
         command = [animaDir + "animaTransformSerieXmlGenerator", "-i", tmpT1Prefix + "_rig_tr.txt", "-o",
