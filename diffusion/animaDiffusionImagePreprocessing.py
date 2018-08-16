@@ -261,7 +261,6 @@ dtiEstimationCommand = [animaDir + "animaDTIEstimator", "-i", outputImage, "-o",
 if args.no_brain_masking is False:
     dtiEstimationCommand += ["-m", dwiImagePrefix + "_brainMask.nrrd"]
 
-print(dtiEstimationCommand)
 call(dtiEstimationCommand)
 
 shutil.rmtree(tmpFolder)
