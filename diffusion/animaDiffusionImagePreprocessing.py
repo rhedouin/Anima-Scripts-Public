@@ -27,7 +27,7 @@ configParser.read(configFilePath)
 
 animaDir = configParser.get("anima-scripts", 'anima')
 animaDataDir = configParser.get("anima-scripts", 'extra-data-root')
-animaScriptsDir = configParser.get("anima-scripts", 'anima-scripts-root')
+animaScriptsDir = configParser.get("anima-scripts", 'anima-scripts-public-root')
 
 # Argument parsing
 parser = argparse.ArgumentParser(
