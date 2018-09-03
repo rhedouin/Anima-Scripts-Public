@@ -54,9 +54,9 @@ do
 
 	if [ ${k} -eq 1 ]; then
 		echo "let index=\${OAR_ARRAY_INDEX}+1" >> tmpRun_${k}
-		echo "${ROOT_DIR}/atlasing/anatomical/animaRegisterImage.sh ${PWD} ${ref}.nii.gz ${prefixBase} ${prefix} \$index ${ncores}" >> tmpRun_${k}
+		echo "${ROOT_PUBLIC_DIR}/atlasing/anatomical/animaRegisterImage.sh ${PWD} ${ref}.nii.gz ${prefixBase} ${prefix} \$index ${ncores}" >> tmpRun_${k}
 	else
-		echo "${ROOT_DIR}/atlasing/anatomical/animaRegisterImage.sh ${PWD} ${ref}.nii.gz ${prefixBase} ${prefix} \$OAR_ARRAY_INDEX ${ncores}" >> tmpRun_${k}
+		echo "${ROOT_PUBLIC_DIR}/atlasing/anatomical/animaRegisterImage.sh ${PWD} ${ref}.nii.gz ${prefixBase} ${prefix} \$OAR_ARRAY_INDEX ${ncores}" >> tmpRun_${k}
 	fi
 
 	chmod u+x tmpRun_${k}
@@ -86,7 +86,7 @@ do
 
 	echo "export PATH=${PATH}:${ANIMA_DIR}:" >> mergeRun_${k}
 	echo "cd ${PWD}" >> mergeRun_${k}
-	echo "${ROOT_DIR}/atlasing/anatomical/animaMergeImages.sh ${PWD} ${prefixBase} ${prefix} ${k} ${nimages} ${ref} ${ncores}" >> mergeRun_${k}
+	echo "${ROOT_PUBLIC_DIR}/atlasing/anatomical/animaMergeImages.sh ${PWD} ${prefixBase} ${prefix} ${k} ${nimages} ${ref} ${ncores}" >> mergeRun_${k}
 
 	chmod u+x mergeRun_${k}
 	a=`oarsub -n merge-${k} -S ${PWD}/mergeRun_${k} ${jobsId}`

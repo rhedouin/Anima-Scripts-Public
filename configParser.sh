@@ -4,6 +4,7 @@
 configFile=~/.anima/config.txt
 
 ANIMA_DIR=''
+ROOT_PUBLIC_DIR=''
 ROOT_DIR=''
 ANIMA_EXTRA_DATA_DIR=''
 IFS=$(echo -en "\n\b")
@@ -15,6 +16,10 @@ do
 
 	if [ "$key" == "anima" ]; then
 		ANIMA_DIR="$value"
+	fi
+
+	if [ "$key" == "anima-scripts-public-root" ]; then
+		ROOT_PUBLIC_DIR="$value"
 	fi
 
 	if [ "$key" == "anima-scripts-root" ]; then
