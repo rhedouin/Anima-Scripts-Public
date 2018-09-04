@@ -5,7 +5,7 @@ This repository includes python and Unix shell scripts (for execution on an [OAR
 
 ## Installation
 
-Anima-Scripts-Public only requires two packages:
+Anima-Scripts-Public only requires two packages and a data package:
 - [Python](https://www.python.org)
 - [Anima public](https://github.com/Inria-Visages/Anima-Public/)
 - [Anima scripts data](https://team.inria.fr/visages/files/2018/09/Anima_Data.zip): data required for some scripts to work (brain extraction and diffusion scripts)
