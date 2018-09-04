@@ -48,7 +48,7 @@ animaBrainExtractionScript = os.path.join(animaScriptsDir, "brain_extraction", "
 
 refImage = args.reference
 listImages = [args.flair, args.t1, args.t1_gd]
-if (args.t2 != "") :
+if args.t2 != "":
     listImages.append(args.t2)
 
 brainExtractionCommand = ["python", animaBrainExtractionScript, refImage]

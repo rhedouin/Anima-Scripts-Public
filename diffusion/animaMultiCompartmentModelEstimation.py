@@ -9,9 +9,7 @@ if sys.version_info[0] > 2:
 else:
     import ConfigParser as ConfParser
 
-import glob
 import os
-import shutil
 from subprocess import call
 
 configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
@@ -60,6 +58,7 @@ if args.no_model_simplification is False:
     if args.model_selection is True:
         baseEstimationCommand += ["-M"]
 
+# Default model is stick
 modelNumber = 1
 if args.type.lower() == "zeppelin":
     modelNumber = 2
