@@ -1,7 +1,7 @@
 # Anima-Scripts-Public
 Open source scripts for medical image processing from the VISAGES team
 
-This repository includes python and Unix shell scripts (for execution on an [OAR](https://oar.imag.fr) cluster). Their goal is to combine several tools from [Anima public](https://github.com/Inria-Visages/Anima-Public/) to accomplish more complex tasks (atlasing, image stitching, full lesion segmentation pipeline,...).
+This repository includes python and Unix shell scripts (for execution on an [OAR](https://oar.imag.fr) cluster). Their goal is to combine several tools from [Anima public](https://github.com/Inria-Visages/Anima-Public/) to accomplish more complex tasks (atlasing, diffusion imaging, brain extraction...).
 
 ## Installation
 
