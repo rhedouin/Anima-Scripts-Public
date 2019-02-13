@@ -64,7 +64,7 @@ if args.num_iter == 1:
 
 myfile = open("sumNonlinear.txt","w")
 for a in range(1,args.num_images + 1):
-    myfile.write(os.path.join(tempDir,args.prefix + "_" + str(a) + "_nonlinear_tr.nii.gz") + "\n")
+    myfile.write(os.path.join("tempDir",args.prefix + "_" + str(a) + "_nonlinear_tr.nii.gz") + "\n")
 
 myfile.close()
 
