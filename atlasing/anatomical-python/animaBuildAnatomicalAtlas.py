@@ -65,8 +65,8 @@ for k in range(1,args.num_iterations + 1):
     fileName = 'iterRun_' + str(k)
     myfile = open(fileName,"w")
     myfile.write("#!/bin/bash\n")
-    myfile.write("#OAR -l \\{\"hyperthreading=\'NO\'\"\\}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
-    myfile.write("#OAR -l \\{\"hyperthreading=\'YES\'\"\\}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
+    myfile.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
+    myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
     myfile.write("#OAR --array " + str(numJobs) + "\n")
     myfile.write("#OAR -O " + os.getcwd() + "/reg-" + str(k) + ".%jobid%.output\n")
     myfile.write("#OAR -E " + os.getcwd() + "/reg-" + str(k) + ".%jobid%.error\n")
@@ -75,11 +75,11 @@ for k in range(1,args.num_iterations + 1):
 
     if k == 1:
         myfile.write("let index=${OAR_ARRAY_INDEX}+1\n")
-        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaLongitudinalRegisterImage.py") +
+        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaAnatomicalRegisterImage.py") +
                      " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
                      " -n $index -b " + str(args.bch_order) + " -c " + str(args.num_cores))
     else:
-        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaLongitudinalRegisterImage.py") +
+        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaAnatomicalRegisterImage.py") +
                      " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
                      " -n $OAR_ARRAY_INDEX -b " + str(args.bch_order) + " -c " + str(args.num_cores))
 
@@ -106,18 +106,18 @@ for k in range(1,args.num_iterations + 1):
     fileName = 'mergeRun_' + str(k)
     myfile = open(fileName,"w")
     myfile.write("#!/bin/bash\n")
-    myfile.write("#OAR -l \\{\"hyperthreading=\'NO\'\"\\}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
-    myfile.write("#OAR -l \\{\"hyperthreading=\'YES\'\"\\}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
+    myfile.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
+    myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
     myfile.write("#OAR -O " + os.getcwd() + "/merge-" + str(k) + ".%jobid%.output\n")
     myfile.write("#OAR -E " + os.getcwd() + "/merge-" + str(k) + ".%jobid%.error\n")
 
     myfile.write("cd " + os.getcwd() + "\n")
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaLongitudinalMergeImages.py") +
+    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaAnatomicalMergeImages.py") +
                  " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
                  " -n " + str(args.num_images) + " -r " + ref + " -c " + str(args.num_cores))
 
-    if not args.weights == "":
-        myfile.write(" -w " + args.weights + "\n")
+    if not args.weights_file == "":
+        myfile.write(" -w " + args.weights_file + "\n")
     else:
         myfile.write("\n")
 
