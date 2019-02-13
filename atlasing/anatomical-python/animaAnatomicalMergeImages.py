@@ -119,7 +119,7 @@ if os.path.exists(os.path.join("Masks","Mask_1.nii.gz")):
 call(command)
 
 if os.path.exists("averageForm" + str(args.num_iter) + ".nii.gz"):
-    open("it_" + str(args.num_iter) + "_done")
+    open("it_" + str(args.num_iter) + "_done","w").close()
     t = args.num_iter + 1
     if os.path.exists("iterRun_" + str(t)):
         shutil.rmtree("residualDir")
