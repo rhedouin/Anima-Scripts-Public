@@ -87,6 +87,9 @@ else:
     shutil.move(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nii.gz"),
                 os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"))
 
+if os.path.exists(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz")):
+    os.remove(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"))
+
 os.symlink(os.path.join(os.getcwd(),"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"),
            os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"))
 
