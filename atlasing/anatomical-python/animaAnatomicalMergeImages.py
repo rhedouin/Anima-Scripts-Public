@@ -96,7 +96,7 @@ for a in range(1,args.num_images+1):
                "-t",os.path.join("tempDir","trsf_" + str(a) + ".xml"),"-g",args.ref_image + ".nii.gz",
                "-o",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nii.gz"),"-p",str(args.num_cores)]
     call(command)
-    myfileImages.write(os.path.join("tempDir", args.prefix + "_" + str(a) + "_at.nii.gz"))
+    myfileImages.write(os.path.join("tempDir", args.prefix + "_" + str(a) + "_at.nii.gz\n"))
 
     if os.path.exists(os.path.join("Masks", "Mask_" + str(a) + ".nii.gz")):
         command = [animaApplyTransformSerie, "-i",os.path.join(args.prefix_base, "Mask_" + str(a) + ".nii.gz"),
@@ -104,7 +104,7 @@ for a in range(1,args.num_images+1):
                    "-o", os.path.join("tempDir","Mask_" + str(a) + "_at.nii.gz"),
                    "-n","nearest","-p", str(args.num_cores)]
         call(command)
-        myfileMasks.write(os.path.join("tempDir","Mask_" + str(a) + "_at.nii.gz"))
+        myfileMasks.write(os.path.join("tempDir","Mask_" + str(a) + "_at.nii.gz\n"))
 
 myfileImages.close()
 myfileMasks.close()
