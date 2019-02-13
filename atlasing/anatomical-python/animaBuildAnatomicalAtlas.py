@@ -134,3 +134,6 @@ for k in range(1,args.num_iterations + 1):
         if "OAR_JOB_ID" in statsLine:
             previousMergeId = statsLine.split("=")[1]
             break
+
+    ref = "averageForm" + str(k)
+    firstImage = 1
