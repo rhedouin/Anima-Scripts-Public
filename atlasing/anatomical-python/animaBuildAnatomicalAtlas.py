@@ -6,6 +6,7 @@ import os
 import glob
 import sys
 import subprocess
+import shutil
 
 if sys.version_info[0] > 2:
     import configparser as ConfParser
@@ -39,8 +40,10 @@ args = parser.parse_args()
 if not os.path.exists('tempDir'):
     os.makedirs('tempDir')
 
-if not os.path.exists('residualDir'):
-    os.makedirs('residualDir')
+if os.path.exists('residualDir'):
+    shutil.rmtree("residualDir")
+
+os.makedirs('residualDir')
 
 ref = args.data_prefix + '_1'
 prefixBase = os.path.dirname(args.data_prefix)
@@ -52,6 +55,8 @@ previousMergeId = 0
 
 for k in range(1,args.num_iterations + 1):
     if os.path.exists('it_' + str(k) + '_done'):
+        ref = "averageForm" + str(k)
+        firstImage = 1
         continue
 
     print("*************Iteration " + str(k) + ", processing reference: " + ref)
