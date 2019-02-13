@@ -62,10 +62,6 @@ if args.num_iter == 1:
                "-b","0","-g",os.path.join(args.prefix_base,args.prefix + "_1.nii.gz"),"-v","3"]
     call(command)
 
-os.remove("refIms.txt")
-os.remove("masksIms.txt")
-os.remove("sumNonlinear.txt")
-
 myfile = open("sumNonlinear.txt","w")
 for a in range(1,args.num_images + 1):
     myfile.write(os.path.join(tempDir,args.prefix + "_" + str(a) + "_nonlinear_tr.nii.gz") + "\n")
