@@ -116,10 +116,11 @@ myfileMasks.close()
 command = [animaAverageImages,"-i","refIms.txt","-o","averageDTI" + str(args.num_iter) + ".nii.gz","-m","masksIms.txt"]
 if not args.weights == "":
     command += ["-w",args.weights]
-
 call(command)
 
 command = [animaAverageImages,"-i","masksIms.txt","-o",os.path.join("tempDir","meanMasks_at.nii.gz")]
+if not args.weights == "":
+    command += ["-w",args.weights]
 call(command)
 
 command = [animaThrImage,"-i",os.path.join("tempDir","meanMasks_at.nii.gz"),"-t","0.25",
