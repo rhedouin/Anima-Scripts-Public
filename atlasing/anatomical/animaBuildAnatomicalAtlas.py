@@ -80,11 +80,11 @@ for k in range(1,args.num_iterations + 1):
 
     if k == 1:
         myfile.write("let index=${OAR_ARRAY_INDEX}+1\n")
-        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaAnatomicalRegisterImage.py") +
+        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
                      " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
                      " -n $index -b " + str(args.bch_order) + " -c " + str(args.num_cores))
     else:
-        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaAnatomicalRegisterImage.py") +
+        myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
                      " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
                      " -n $OAR_ARRAY_INDEX -b " + str(args.bch_order) + " -c " + str(args.num_cores))
 
@@ -117,7 +117,7 @@ for k in range(1,args.num_iterations + 1):
     myfile.write("#OAR -E " + os.getcwd() + "/merge-" + str(k) + ".%jobid%.error\n")
 
     myfile.write("cd " + os.getcwd() + "\n")
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical-python/animaAnatomicalMergeImages.py") +
+    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalMergeImages.py") +
                  " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
                  " -n " + str(args.num_images) + " -r " + ref + " -c " + str(args.num_cores))
 
