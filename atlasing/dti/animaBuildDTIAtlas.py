@@ -55,7 +55,7 @@ previousMergeId = 0
 
 for k in range(1,args.num_iterations + 1):
     if os.path.exists('it_' + str(k) + '_done'):
-        ref = "averageForm" + str(k)
+        ref = "averageDTI" + str(k)
         firstImage = 1
         continue
 
@@ -140,5 +140,5 @@ for k in range(1,args.num_iterations + 1):
             previousMergeId = statsLine.split("=")[1]
             break
 
-    ref = "averageForm" + str(k)
+    ref = "averageDTI" + str(k)
     firstImage = 1
