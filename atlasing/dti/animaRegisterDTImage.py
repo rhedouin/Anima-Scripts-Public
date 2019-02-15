@@ -92,7 +92,7 @@ call(command)
 
 command = [animaTensorApplyTransformSerie,"-i",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + ".nii.gz"),
            "-g",args.ref_image,"-t",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_tr.xml"),
-           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nii.gz"),"-p",args.num_cores]
+           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nii.gz"),"-p",str(args.num_cores)]
 call(command)
 
 # Non-Rigid registration
