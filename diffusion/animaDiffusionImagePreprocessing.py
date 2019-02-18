@@ -128,7 +128,7 @@ if args.no_eddy_correction is False:
 
 # Extract brain from T1 image if present (used for further processing)
 if (args.no_disto_correction is False or args.no_brain_masking is False) and not args.t1 == "":
-    brainExtractionCommand = ["python", animaScriptsDir + "brain_extraction/animaAtlasBasedBrainExtraction.py", args.t1]
+    brainExtractionCommand = ["python", animaScriptsDir + "brain_extraction/animaAtlasBasedBrainExtraction.py", "-i", args.t1]
     call(brainExtractionCommand)
 
 # Then susceptibility distortion
