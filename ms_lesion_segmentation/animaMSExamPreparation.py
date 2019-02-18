@@ -52,7 +52,7 @@ listImages = [args.flair, args.t1, args.t1_gd]
 if args.t2 != "":
     listImages.append(args.t2)
 
-brainExtractionCommand = ["python", animaBrainExtractionScript, "-i", refImage]
+brainExtractionCommand = ["python", animaBrainExtractionScript, "-i", refImage, "-S"]
 call(brainExtractionCommand)
 
 # Decide on whether to use large image setting or small image setting
