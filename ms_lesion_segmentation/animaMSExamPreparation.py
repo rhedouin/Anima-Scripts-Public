@@ -11,7 +11,7 @@ else:
 import os
 import shutil
 import tempfile
-from subprocess import call
+from subprocess import call, check_output
 
 configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
 if not os.path.exists(configFilePath):
@@ -44,6 +44,7 @@ animaPyramidalBMRegistration = os.path.join(animaDir, "animaPyramidalBMRegistrat
 animaMaskImage = os.path.join(animaDir, "animaMaskImage")
 animaNLMeans = os.path.join(animaDir, "animaNLMeans")
 animaN4BiasCorrection = os.path.join(animaDir, "animaN4BiasCorrection")
+animaConvertImage = os.path.join(animaDir, "animaConvertImage")
 animaBrainExtractionScript = os.path.join(animaScriptsDir, "brain_extraction", "animaAtlasBasedBrainExtraction.py")
 
 refImage = args.reference
@@ -51,8 +52,23 @@ listImages = [args.flair, args.t1, args.t1_gd]
 if args.t2 != "":
     listImages.append(args.t2)
 
-brainExtractionCommand = ["python", animaBrainExtractionScript, refImage]
+brainExtractionCommand = ["python", animaBrainExtractionScript, "-i", refImage, "-S"]
 call(brainExtractionCommand)
+
+# Decide on whether to use large image setting or small image setting
+command = [animaConvertImage, "-i", refImage, "-I"]
+convert_output = check_output(command, universal_newlines=True)
+size_info = convert_output.split('\n')[1].split('[')[1].split(']')[0]
+large_image = False
+for i in range(0, 3):
+    size_tmp = int(size_info.split(', ')[i])
+    if size_tmp >= 350:
+        large_image = True
+        break
+
+pyramidOptions = ["-p", "4", "-l", "1"]
+if large_image:
+    pyramidOptions = ["-p", "5", "-l", "2"]
 
 refImagePrefix = os.path.splitext(refImage)[0]
 if os.path.splitext(refImage)[1] == '.gz':
@@ -68,7 +84,7 @@ for i in range(0, len(listImages)):
 
     registeredDataFile = os.path.join(tmpFolder, "SecondImage_registered.nrrd")
     rigidRegistrationCommand = [animaPyramidalBMRegistration, "-r", refImage, "-m", listImages[i], "-o",
-                                registeredDataFile, "-p", "4", "-l", "1"]
+                                registeredDataFile] + pyramidOptions
     call(rigidRegistrationCommand)
 
     unbiasedSecondImage = os.path.join(tmpFolder, "SecondImage_unbiased.nrrd")
