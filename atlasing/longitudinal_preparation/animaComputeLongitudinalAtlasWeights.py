@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Warning: works only on unix-like systems, not windows where "python animaBuildAnatomicalAtlas.py ..." has to be run
+# Warning: works only on unix-like systems, not windows where "python animaComputeLongitudinalAtlasWeights.py ..." has to be run
 
 import argparse
 import os
@@ -8,7 +8,7 @@ import shutil
 import numpy as np
 from scipy import signal
 import pandas as pd 
-import animaP5ker
+from animaPolynomialKernel import polynomial_kernel
 
 if sys.version_info[0] > 2:
     import configparser as ConfParser
@@ -27,8 +27,7 @@ animaDir = configParser.get("anima-scripts", 'anima')
 animaScriptsDir = configParser.get("anima-scripts", 'anima-scripts-public-root')
 
 # Argument parsing
-parser = argparse.ArgumentParser(
-    description=" ")
+parser = argparse.ArgumentParser(description="Compute data weights for building an atlas at the specified age")
 
 parser.add_argument('-a', '--age-file', required=True, type=str, help='list of ages (in txt file)')
 parser.add_argument('-i', '--image-file', required=True, type=str, help='list of images (in txt file)')
@@ -45,78 +44,76 @@ parser.add_argument('-s', '--init-window', type=float, default=3, help='')
 
 args = parser.parse_args()
 
-ages=np.loadtxt(fname=args.age_file)
-images= np.genfromtxt(args.image_file, dtype='str')
-outDir=args.out_dir
-N=args.nb_images
-wantedAge=np.loadtxt(fname=args.age_atlas)
-prefix=os.path.split(args.prefix)
+ages = np.loadtxt(fname=args.age_file)
+images = np.genfromtxt(args.image_file, dtype='str')
+outDir = args.out_dir
+N = args.nb_images
+wantedAge = np.loadtxt(fname=args.age_atlas)
+prefix = os.path.split(args.prefix)
 
-sampleSize=args.t_sampleSize
-itmax=args.nb_iter
-alphaSampleSize=args.alpha_sampleSize
-tolBias=args.tol_bias
-s=args.init_window*np.ones(sampleSize)
+sampleSize = args.t_sampleSize
+itmax = args.nb_iter
+alphaSampleSize = args.alpha_sampleSize
+tolBias = args.tol_bias
+s = args.init_window*np.ones(sampleSize)
 
-t=np.linspace(min(ages), max(ages), sampleSize)
-alpha=np.zeros(sampleSize)
-n=np.zeros(sampleSize)
+t = np.linspace(min(ages), max(ages), sampleSize)
+alpha = np.zeros(sampleSize)
+n = np.zeros(sampleSize)
 
 print("optimizing kernel window over temporal bias...")
 for it in range(1, itmax+1):
     print(str(it)+"/"+str(itmax))
     
-    bias=np.inf*np.ones(len(t))
+    bias = np.inf*np.ones(len(t))
     for i in range(0, len(t)):
-        rangeAlpha=np.linspace(np.ceil(10000*(t[i]-3*s[i]/5))/10000, np.floor(10000*(t[i]-2*s[i]/5))/10000, alphaSampleSize)
+        rangeAlpha = np.linspace(np.ceil(10000*(t[i]-3*s[i]/5))/10000, np.floor(10000*(t[i]-2*s[i]/5))/10000, alphaSampleSize)
     
         for alpha0 in rangeAlpha:
-            _, _, bias0, n0=animaP5ker.p5ker(ages, t[i], s[i], alpha0)
-            if bias0<bias[i]:
-                alpha[i]=alpha0
-                bias[i]=bias0
-                n[i]=n0
+            _, _, bias0, n0 = polynomial_kernel(ages, t[i], s[i], alpha0)
+            if bias0 < bias[i]:
+                alpha[i] = alpha0
+                bias[i] = bias0
+                n[i] = n0
         
-        if it<itmax:
+        if it < itmax:
             st=0.5*0.8**(it-1)        
-            if n[i]<N: s[i]=s[i]+st
-            elif n[i]>N: s[i]=s[i]-st
+            if n[i] < N:
+                s[i] = s[i]+st
+            elif n[i] > N:
+                s[i] = s[i]-st
             
-        if it==itmax-1:
-            ss=signal.savgol_filter(s, int(2*np.floor(sampleSize/20)+1), 3)
+        if it == itmax-1:
+            ss = signal.savgol_filter(s, int(2*np.floor(sampleSize/20)+1), 3)
             
 modelInfo = {'sampleTime': t, 'windowSize': ss, 'windowStart': alpha, 'windowFrequency': n, 'temporalBias': bias}
 df = pd.DataFrame(data=modelInfo)         
 df.to_csv(os.path.join(outDir, "modelInfo.csv"))
  
 print("choosing ages and subjects for each sub-atlas...")      
-okAge=t[bias<tolBias]
-atlasAge=np.zeros(len(wantedAge))
+okAge = t[bias < tolBias]
+atlasAge = np.zeros(len(wantedAge))
 
 for i in range(0, len(wantedAge)):
-    indAge=abs(wantedAge[i]-okAge).argmin()
-    atlasAge[i]=okAge[indAge]    
-    indt=np.where(t == atlasAge[i])
+    indAge = abs(wantedAge[i]-okAge).argmin()
+    atlasAge[i] = okAge[indAge]
+    indt = np.where(t == atlasAge[i])
 
-np.savetxt(os.path.join(outDir, "atlasAge.txt"),atlasAge)
+np.savetxt(os.path.join(outDir, "atlasAge.txt"), atlasAge)
 
-print("mkdirs and cp files...") 
+print("mkdirs and cp files...")
 for i in range(0, len(atlasAge)):   
-    w,ind,_,_=animaP5ker.p5ker(ages, t[indt], s[indt], alpha[indt])
+    w, ind, _, _ = polynomial_kernel(ages, t[indt], s[indt], alpha[indt])
     sub=images[ind]
     
     if os.path.exists(os.path.join(outDir, "atlas_"+str(i+1))):
-        shutil.rmtree(os.path.join(outDir, "atlas_"+str(i+1)))      
+        shutil.rmtree(os.path.join(outDir, "atlas_"+str(i+1)))
+
     os.makedirs(os.path.join(outDir, "atlas_"+str(i+1)))
     os.makedirs(os.path.join(outDir, "atlas_"+str(i+1), prefix[0]))
     for j in range(0, len(sub)):
-        dest=os.path.join(outDir, "atlas_"+str(i+1), prefix[0], prefix[1]+"_"+str(j+1)+".nii.gz")
+        dest = os.path.join(outDir, "atlas_"+str(i+1), prefix[0], prefix[1]+"_"+str(j+1)+".nii.gz")
         shutil.copyfile(sub[j], str(dest))
         
     np.savetxt(os.path.join(outDir, "atlas_"+str(i+1),"weights.txt"),w)
     np.savetxt(os.path.join(outDir, "atlas_"+str(i+1),"subjects.txt"),sub, fmt="%s")
-
-
-        
-        
-        
