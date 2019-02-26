@@ -10,22 +10,6 @@ from scipy import signal
 import pandas as pd 
 from animaPolynomialKernel import polynomial_kernel
 
-if sys.version_info[0] > 2:
-    import configparser as ConfParser
-else:
-    import ConfigParser as ConfParser
-
-configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
-if not os.path.exists(configFilePath):
-    print('Please create a configuration file for Anima python scripts. Refer to the README')
-    quit()
-
-configParser = ConfParser.RawConfigParser()
-configParser.read(configFilePath)
-
-animaDir = configParser.get("anima-scripts", 'anima')
-animaScriptsDir = configParser.get("anima-scripts", 'anima-scripts-public-root')
-
 # Argument parsing
 parser = argparse.ArgumentParser(description="Compute data weights for building an atlas at the specified age")
 
@@ -83,8 +67,8 @@ for it in range(1, itmax+1):
             elif n[i] > N:
                 s[i] = s[i]-st
             
-        if it == itmax-1:
-            ss = signal.savgol_filter(s, int(2*np.floor(sampleSize/20)+1), 3)
+    if it == itmax-1:
+        ss = signal.savgol_filter(s, int(2*np.floor(sampleSize/20)+1), 3)
             
 modelInfo = {'sampleTime': t, 'windowSize': ss, 'windowStart': alpha, 'windowFrequency': n, 'temporalBias': bias}
 df = pd.DataFrame(data=modelInfo)         
