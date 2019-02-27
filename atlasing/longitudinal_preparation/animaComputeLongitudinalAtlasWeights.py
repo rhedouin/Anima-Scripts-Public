@@ -3,7 +3,6 @@
 
 import argparse
 import os
-import sys
 import shutil
 import numpy as np
 from scipy import signal
@@ -71,7 +70,11 @@ for it in range(1, itmax+1):
         ss = signal.savgol_filter(s, int(2*np.floor(sampleSize/20)+1), 3)
             
 modelInfo = {'sampleTime': t, 'windowSize': ss, 'windowStart': alpha, 'windowFrequency': n, 'temporalBias': bias}
-df = pd.DataFrame(data=modelInfo)         
+df = pd.DataFrame(data=modelInfo)
+
+if not os.path.exists(outDir):
+    os.makedirs(outDir)
+
 df.to_csv(os.path.join(outDir, "modelInfo.csv"))
  
 print("choosing ages and subjects for each sub-atlas...")      
@@ -89,7 +92,7 @@ print("mkdirs and cp files...")
 for i in range(0, len(atlasAge)):   
     w, ind, _, _ = polynomial_kernel(ages, t[indt], s[indt], alpha[indt])
     sub=images[ind]
-    
+
     if os.path.exists(os.path.join(outDir, "atlas_"+str(i+1))):
         shutil.rmtree(os.path.join(outDir, "atlas_"+str(i+1)))
 
