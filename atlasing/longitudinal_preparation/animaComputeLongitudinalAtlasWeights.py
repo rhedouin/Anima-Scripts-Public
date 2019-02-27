@@ -19,11 +19,11 @@ parser.add_argument('-n', '--nb-images', required=True, type=int, help='desired 
 parser.add_argument('-A', '--age-atlas', required=True, type=str, help='desired age of each sub-atlas')
 parser.add_argument('-p', '--prefix', required=True, type=str, help='prefix of subjects')
 
-parser.add_argument('-t', '--t-sampleSize', type=int, default=1000, help='')
-parser.add_argument('-u', '--nb-iter', type=int, default=30, help='')
-parser.add_argument('-v', '--alpha-sampleSize', type=int, default=500, help='')
-parser.add_argument('-b', '--tol-bias', type=float, default=0.005, help='')
-parser.add_argument('-s', '--init-window', type=float, default=3, help='')
+parser.add_argument('-t', '--t-sampleSize', type=int, default=1000, help='size of age sampling: (default: 1000)')
+parser.add_argument('-u', '--nb-iter', type=int, default=30, help='number of iteration of main loop (optimization) (default: 30)')
+parser.add_argument('-v', '--alpha-sampleSize', type=int, default=500, help='size of alpha sampling (default: 500)')
+parser.add_argument('-b', '--tol-bias', type=float, default=0.005, help='maximum bias tolerance (default: 0.005)')
+parser.add_argument('-s', '--init-window', type=float, default=3, help='initial size of age window (default: 3)')
 
 args = parser.parse_args()
 
