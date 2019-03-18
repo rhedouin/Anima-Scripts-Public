@@ -49,7 +49,7 @@ baseEstimationCommand = [animaDir + "animaMCMEstimator", "-FR"]
 if args.type.lower() == "ddi":
     baseEstimationCommand += ["--optimizer", "bobyqa", "--ml-mode", "1"]
 else:
-    baseEstimationCommand += ["--optimizer", "levenberg", "--ml-mode", "2"]
+    baseEstimationCommand += ["--optimizer", "bfgs", "--ml-mode", "2"]
 
 if args.hcp is True:
     baseEstimationCommand += ["-S"]
