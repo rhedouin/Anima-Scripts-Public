@@ -26,7 +26,7 @@ animaDir = configParser.get("anima-scripts", 'anima')
 parser = argparse.ArgumentParser(
     description="Performs multi-compartment models estimation and averaging from pre-processed or unprocessed DWI image(s)")
 parser.add_argument('-t', '--type', type=str, default="tensor",
-                    help="Type of compartment model for fascicles (stick, zeppelin, tensor, DDI)")
+                    help="Type of compartment model for fascicles (stick, zeppelin, tensor, noddi, ddi)")
 parser.add_argument('-n', '--num-compartments', type=int, default=3,
                     help="Number of fascicle compartments at most")
 
@@ -64,8 +64,10 @@ if args.type.lower() == "zeppelin":
     modelNumber = 2
 elif args.type.lower() == "tensor":
     modelNumber = 3
-elif args.type.lower() == "ddi":
+elif args.type.lower() == "noddi":
     modelNumber = 4
+elif args.type.lower() == "ddi":
+    modelNumber = 5
 
 baseEstimationCommand += ["-c", str(modelNumber)]
 
