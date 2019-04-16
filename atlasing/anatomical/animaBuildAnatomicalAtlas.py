@@ -70,8 +70,11 @@ for k in range(1,args.num_iterations + 1):
     fileName = 'iterRun_' + str(k)
     myfile = open(fileName,"w")
     myfile.write("#!/bin/bash\n")
-    myfile.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
-    myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
+    if args.num_cores<=16:
+        myfile.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
+        myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
+    else:
+        myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
     myfile.write("#OAR --array " + str(numJobs) + "\n")
     myfile.write("#OAR -O " + os.getcwd() + "/reg-" + str(k) + ".%jobid%.output\n")
     myfile.write("#OAR -E " + os.getcwd() + "/reg-" + str(k) + ".%jobid%.error\n")
@@ -111,8 +114,11 @@ for k in range(1,args.num_iterations + 1):
     fileName = 'mergeRun_' + str(k)
     myfile = open(fileName,"w")
     myfile.write("#!/bin/bash\n")
-    myfile.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
-    myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
+    if args.num_cores<=16:
+        myfile.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
+        myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
+    else:
+        myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
     myfile.write("#OAR -O " + os.getcwd() + "/merge-" + str(k) + ".%jobid%.output\n")
     myfile.write("#OAR -E " + os.getcwd() + "/merge-" + str(k) + ".%jobid%.error\n")
 
