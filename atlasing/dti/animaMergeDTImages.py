@@ -50,7 +50,7 @@ animaMaskImage = os.path.join(animaDir,"animaMaskImage")
 
 # test if all images are here
 nimTest = args.num_images
-if args.num_iter == 1:
+if args.num_iter == 0:
     nimTest -= 1
 
 numData = len(glob.glob(os.path.join("residualDir",args.prefix + "_*_flag")))
@@ -60,7 +60,7 @@ while numData < nimTest:
     numData = len(glob.glob(os.path.join("residualDir", args.prefix + "_*_flag")))
 
 # if ok proceed
-if args.num_iter == 1:
+if args.num_iter == 0:
     command = [animaCreateImage,"-o",os.path.join("tempDir",args.prefix + "_1_nonlinear_tr.nii.gz"),
                "-b","0","-g",os.path.join(args.prefix_base,args.prefix + "_1.nii.gz"),"-v","3"]
     call(command)
@@ -113,7 +113,11 @@ for a in range(1,args.num_images+1):
 myfileImages.close()
 myfileMasks.close()
 
-command = [animaAverageImages,"-i","refIms.txt","-o","averageDTI" + str(args.num_iter) + ".nii.gz","-m","masksIms.txt"]
+if args.num_iter == 0:
+    command = [animaAverageImages,"-i","refIms.txt","-o","averageDTI1.nii.gz","-m","masksIms.txt"]
+else:
+    command = [animaAverageImages,"-i","refIms.txt","-o","averageDTI" + str(args.num_iter) + ".nii.gz","-m","masksIms.txt"]
+
 if not args.weights == "":
     command += ["-w",args.weights]
 call(command)
