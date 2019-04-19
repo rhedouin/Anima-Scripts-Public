@@ -47,7 +47,7 @@ animaApplyTransformSerie = os.path.join(animaDir,"animaApplyTransformSerie")
 
 # test if all images are here
 nimTest = args.num_images
-if args.num_iter == 1:
+if args.num_iter == 0:
     nimTest -= 1
 
 numData = len(glob.glob(os.path.join("residualDir",args.prefix + "_*_flag")))
@@ -57,7 +57,7 @@ while numData < nimTest:
     numData = len(glob.glob(os.path.join("residualDir", args.prefix + "_*_flag")))
 
 # if ok proceed
-if args.num_iter == 1:
+if args.num_iter == 0:
     command = [animaCreateImage,"-o",os.path.join("tempDir",args.prefix + "_1_nonlinear_tr.nii.gz"),
                "-b","0","-g",os.path.join(args.prefix_base,args.prefix + "_1.nii.gz"),"-v","3"]
     call(command)
@@ -81,7 +81,7 @@ call(command)
 myfileImages = open("refIms.txt","w")
 myfileMasks = open("masksIms.txt","w")
 for a in range(1,args.num_images+1):
-    if a == 1 and args.num_iter == 1:
+    if a == 1 and args.num_iter == 0:
         command = [animaTransformSerieXmlGenerator,"-i",os.path.join("tempDir", "sumNonlinear_inv_tr.nii.gz"),
                    "-o",os.path.join("tempDir", "trsf_" + str(a) + ".xml")]
         call(command)
@@ -109,7 +109,11 @@ for a in range(1,args.num_images+1):
 myfileImages.close()
 myfileMasks.close()
 
-command = [animaAverageImages,"-i","refIms.txt","-o","averageForm" + str(args.num_iter) + ".nii.gz"]
+if args.num_iter == 0:
+    command = [animaAverageImages,"-i","refIms.txt","-o","averageForm1.nii.gz"]
+else:
+    command = [animaAverageImages,"-i","refIms.txt","-o","averageForm" + str(args.num_iter) + ".nii.gz"]
+
 if not args.weights == "":
     command += ["-w",args.weights]
 
