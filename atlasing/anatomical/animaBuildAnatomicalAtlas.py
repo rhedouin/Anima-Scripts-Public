@@ -33,6 +33,7 @@ parser.add_argument('-n', '--num-images', type=int, required=True, help='Number 
 parser.add_argument('-c', '--num-cores', type=int, default=8, help='Number of cores to run on (default: 8)')
 parser.add_argument('-b', '--bch-order', type=int, default=2, help='BCH order when composing transformations in rigid unbiased (default: 2)')
 parser.add_argument('-w', '--weights-file', type=str, default="", help='Link to weights file if needed, otherwise using equal weights (default: none)')
+parser.add_argument('-r', '--ref-image', type=str, default="", help='Reference image for the first round of registrations')
 parser.add_argument('--rigid', action='store_true', help="Unbiased atlas up to a rigid transformation")
 
 args = parser.parse_args()
@@ -45,12 +46,19 @@ if os.path.exists('residualDir'):
 
 os.makedirs('residualDir')
 
-ref = args.data_prefix + '_1'
+if args.ref_image == "":
+    ref = args.data_prefix + '_1'
+    # In the first iteration we take the first image as reference, then it is used in the dataset
+    firstImage = 2
+else:
+    ref = os.path.splitext(args.ref_image)[0]
+    if os.path.splitext(args.ref_image)[1] == '.gz' :
+        ref = os.path.splitext(ref)[0]
+    firstImage = 1
+
 prefixBase = os.path.dirname(args.data_prefix)
 prefix = os.path.basename(args.data_prefix)
 
-# In the first iteration we take the first image as reference, then it is used in the dataset
-firstImage = 2
 previousMergeId = 0
 
 for k in range(1,args.num_iterations + 1):
@@ -79,12 +87,14 @@ for k in range(1,args.num_iterations + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    if k == 1:
+    if k == 1 and args.ref_image == "":
+        numIt=0
         myfile.write("let index=${OAR_ARRAY_INDEX}+1\n")
         myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
                      " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
                      " -n $index -b " + str(args.bch_order) + " -c " + str(args.num_cores))
     else:
+        numIt=k
         myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
                      " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
                      " -n $OAR_ARRAY_INDEX -b " + str(args.bch_order) + " -c " + str(args.num_cores))
@@ -120,7 +130,7 @@ for k in range(1,args.num_iterations + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
     myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalMergeImages.py") +
-                 " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
+                 " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(numIt) +
                  " -n " + str(args.num_images) + " -r " + ref + " -c " + str(args.num_cores))
 
     if not args.weights_file == "":
