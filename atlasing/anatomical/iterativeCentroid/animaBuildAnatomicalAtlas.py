@@ -77,7 +77,7 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/iterativeCentroid/animaRegisterImage.py") + " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -b " + str(args.bch_order) + " -c " + str(args.num_cores))
+    myfile.write(os.path.join(animaScriptsDir,"atlasing","anatomical","iterativeCentroid","animaRegisterImage.py") + " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -b " + str(args.bch_order) + " -c " + str(args.num_cores))
 
     if args.rigid is True:
         myfile.write(" --rigid\n")
@@ -113,7 +113,7 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/iterativeCentroid/animaComposeTransfos.py") + " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -c " + str(args.num_cores) + " -s " + str(args.start) + " -b " + str(args.bch_order) + " -a $OAR_ARRAY_INDEX \n")
+    myfile.write(os.path.join(animaScriptsDir,"atlasing","anatomical","iterativeCentroid","animaComposeTransfos.py") + " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -c " + str(args.num_cores) + " -s " + str(args.start) + " -b " + str(args.bch_order) + " -a $OAR_ARRAY_INDEX \n")
 
     myfile.close()
     os.chmod(fileName, 0755)
@@ -138,7 +138,7 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/iterativeCentroid/animaMergeImages.py") + " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -c " + str(args.num_cores) + "\n")
+    myfile.write(os.path.join(animaScriptsDir,"atlasing","anatomical","iterativeCentroid","animaMergeImages.py") + " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -c " + str(args.num_cores) + "\n")
 
     myfile.close()
     os.chmod(fileName, 0755)
