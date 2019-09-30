@@ -9,4 +9,4 @@
 anima-scripts-public-root = /HOME_FOLDER/Anima-Scripts-Public/
 anima-scripts-root = /HOME_FOLDER/Anima-Scripts/
 anima = /HOME_FOLDER/Anima-Public/build/bin/
-extra-data-root = /temp_dd/visages_3/Anima-Scripts_data/
+extra-data-root = /temp_dd/visages_3/Anima-Scripts-Data-Public/
