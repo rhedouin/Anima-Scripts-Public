@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-p', '--data-prefix', type=str, required=True, help='Data prefix (including folder)')
 parser.add_argument('-n', '--num-images', type=int, required=True, help='Number of images in the atlas')
 parser.add_argument('-c', '--num-cores', type=int, default=8, help='Number of cores to run on (default: 8)')
-parser.add_argument('-b', '--bch-order', type=int, default=2, help='BCH order when composing transformations in rigid unbiased (default: 2)')
+parser.add_argument('-b', '--bch-order', type=int, default=2, help='BCH order when composing transformations (default: 2)')
 parser.add_argument('-s', '--start', type=int, default=1, help='number of images in the starting atlas (default: 1)')
 parser.add_argument('--rigid', action='store_true', help="Unbiased atlas up to a rigid transformation")
 
@@ -77,7 +77,9 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/iterativeCentroid/animaRegisterImage.py") + " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -b " + str(args.bch_order) + " -c " + str(args.num_cores))
+    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalRegisterImage.py") +
+                 " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
+                 " -b " + str(args.bch_order) + " -c " + str(args.num_cores))
 
     if args.rigid is True:
         myfile.write(" --rigid\n")
@@ -113,7 +115,10 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/iterativeCentroid/animaComposeTransfos.py") + " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -c " + str(args.num_cores) + " -s " + str(args.start) + " -b " + str(args.bch_order) + " -a $OAR_ARRAY_INDEX \n")
+    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalComposeTransfos.py") +
+                 " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
+                 " -c " + str(args.num_cores) + " -s " + str(args.start) + " -b " + str(args.bch_order) +
+                 " -a $OAR_ARRAY_INDEX \n")
 
     myfile.close()
     os.chmod(fileName, 0755)
@@ -126,7 +131,6 @@ for k in range(args.start + 1, args.num_images + 1):
         if "OAR_JOB_ID" in statsLine:
             jobsIds += [statsLine.split("=")[1]]
 
-
     fileName = 'mergeRun_' + str(k)
     myfile = open(fileName,"w")
     myfile.write("#!/bin/bash\n")
@@ -138,7 +142,9 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/iterativeCentroid/animaMergeImages.py") + " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) + " -c " + str(args.num_cores) + "\n")
+    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalMergeImages.py") +
+                 " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
+                 " -c " + str(args.num_cores) + "\n")
 
     myfile.close()
     os.chmod(fileName, 0755)
@@ -153,4 +159,3 @@ for k in range(args.start + 1, args.num_images + 1):
         if "OAR_JOB_ID" in statsLine:
             previousMergeId = statsLine.split("=")[1]
             break
-
