@@ -6,7 +6,7 @@ This repository includes python scripts (for execution on a standalone platform 
 ## Installation
 
 Anima-Scripts-Public only requires two packages and a data package:
-- [Python](https://www.python.org)
+- [Python](https://www.python.org) (version >= 3.0)
 - [Anima public](https://github.com/Inria-Visages/Anima-Public/)
 - [Anima scripts data](https://github.com/Inria-Visages/Anima-Scripts-Data-Public): data required for some scripts to work (brain extraction and diffusion scripts)
 
