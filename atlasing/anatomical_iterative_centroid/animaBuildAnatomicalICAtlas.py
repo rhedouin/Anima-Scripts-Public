@@ -115,7 +115,7 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write("cd " + os.getcwd() + "\n")
 
-    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalComposeTransfos.py") +
+    myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalComposeTransformations.py") +
                  " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
                  " -c " + str(args.num_cores) + " -s " + str(args.start) + " -b " + str(args.bch_order) +
                  " -a $OAR_ARRAY_INDEX \n")
