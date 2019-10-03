@@ -46,15 +46,3 @@ myfile.close()
 command = [animaAverageImages, "-i", "avgImg.txt","-o","averageForm" + str(args.num_iter) +".nii.gz"]
 
 call(command)
-
-
-# if os.path.exists("averageForm" + str(args.num_iter) + ".nii.gz"):
-#     open("it_" + str(args.num_iter) + "_done","w").close()
-#     t = args.num_iter + 1
-#     if os.path.exists("iterRun_" + str(t)):
-#         shutil.rmtree("residualDir")
-#         shutil.rmtree("tempDir")
-#         os.makedirs('tempDir')
-#         os.makedirs('residualDir')
-#         os.remove("iterRun_" + str(args.num_iter))
-   
