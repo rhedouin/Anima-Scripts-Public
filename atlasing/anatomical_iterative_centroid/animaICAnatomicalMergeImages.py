@@ -38,11 +38,19 @@ os.chdir(args.ref_dir)
 animaAverageImages = os.path.join(animaDir,"animaAverageImages")
 
 myfile = open("avgImg.txt","w")
+myfileMasks = open("masksIms.txt","w")
 for a in range(1,args.num_iter + 1):
     myfile.write(os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nii.gz") + "\n")
 
+    if os.path.exists(os.path.join("Masks", "Mask_" + str(a) + ".nii.gz")):
+        myfileMasks.write(os.path.join("tempDir","Mask_" + str(a) + "_at.nii.gz\n"))
+
 myfile.close()
+myfileMasks.close()
 
 command = [animaAverageImages, "-i", "avgImg.txt","-o","averageForm" + str(args.num_iter) +".nii.gz"]
+
+if os.path.exists(os.path.join("Masks","Mask_1.nii.gz")):
+    command += ["-m","masksIms.txt"]
 
 call(command)

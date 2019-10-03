@@ -63,4 +63,9 @@ call(command)
 
 command = [animaApplyTransformSerie,"-i",os.path.join(args.prefix_base,args.prefix + "_" + str(a) + ".nii.gz"),"-t",os.path.join("tempDir", "T_" + str(a) + ".xml"),"-g","averageForm" + str(k-1) + ".nii.gz", "-o",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nii.gz"),"-p",str(args.num_cores)]
 call(command)
+
+if os.path.exists(os.path.join("Masks", "Mask_" + str(a) + ".nii.gz")):
+    command = [animaApplyTransformSerie,"-i",os.path.join("Masks", "Mask_" + str(a) + ".nii.gz"),"-t",os.path.join("tempDir", "T_" + str(a) + ".xml"),"-g","averageForm" + str(k-1) + ".nii.gz", "-o",os.path.join("tempDir","Mask_" + str(a) + "_at.nii.gz"),"-p",str(args.num_cores),"-n","nearest"]
+    call(command)
+
    
