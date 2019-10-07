@@ -31,7 +31,6 @@ parser.add_argument('-r', '--ref-image', type=str, required=True, help='Referenc
 parser.add_argument('-B', '--prefix-base', type=str, required=True, help='Prefix base')
 parser.add_argument('-p', '--prefix', type=str, required=True, help='Prefix')
 parser.add_argument('-w', '--weights', type=str, default="", help='Weights text file')
-parser.add_argument('-b', '--bch-order', type=int, default=2, help='BCH order when composing transformations in rigid unbiased (default: 2)')
 parser.add_argument('-n', '--num-images', type=int, required=True, help='Number of images')
 parser.add_argument('-i', '--num-iter', type=int, required=True, help='Iteration number of atlas creation')
 parser.add_argument('-c', '--num-cores', type=int, default=40, help='Number of cores to run on')
