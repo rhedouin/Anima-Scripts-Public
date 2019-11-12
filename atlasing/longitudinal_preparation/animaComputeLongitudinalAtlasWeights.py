@@ -67,9 +67,9 @@ for it in range(1, itmax+1):
                 s[i] = s[i]-st
             
     if it == itmax-1:
-        ss = signal.savgol_filter(s, int(2*np.floor(sampleSize/20)+1), 3)
+        s = signal.savgol_filter(s, int(2*np.floor(sampleSize/20)+1), 3)
             
-modelInfo = {'sampleTime': t, 'windowSize': ss, 'windowStart': alpha, 'windowFrequency': n, 'temporalBias': bias}
+modelInfo = {'sampleTime': t, 'windowSize': s, 'windowStart': alpha, 'windowFrequency': n, 'temporalBias': bias}
 df = pd.DataFrame(data=modelInfo)
 
 if not os.path.exists(outDir):
@@ -84,12 +84,12 @@ atlasAge = np.zeros(len(wantedAge))
 for i in range(0, len(wantedAge)):
     indAge = abs(wantedAge[i]-okAge).argmin()
     atlasAge[i] = okAge[indAge]
-    indt = np.where(t == atlasAge[i])
 
 np.savetxt(os.path.join(outDir, "atlasAge.txt"), atlasAge)
 
 print("mkdirs and cp files...")
-for i in range(0, len(atlasAge)):   
+for i in range(0, len(atlasAge)): 
+    indt = np.where(t == atlasAge[i])
     w, ind, _, _ = polynomial_kernel(ages, t[indt], s[indt], alpha[indt])
     sub=images[ind]
 
