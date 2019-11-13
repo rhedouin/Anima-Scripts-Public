@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Warning: works only on unix-like systems, not windows where "python animaDiffusionImagePreprocessing.py ..." has to be run
 
 import sys
