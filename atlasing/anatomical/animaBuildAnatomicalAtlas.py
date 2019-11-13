@@ -105,7 +105,7 @@ for k in range(1,args.num_iterations + 1):
         myfile.write("\n")
 
     myfile.close()
-    os.chmod(fileName, 0755)
+    os.chmod(fileName, stat.S_IRWXU)
 
     oarRunCommand = ["oarsub"]
     if previousMergeId == 0:
@@ -139,7 +139,7 @@ for k in range(1,args.num_iterations + 1):
         myfile.write("\n")
 
     myfile.close()
-    os.chmod(fileName, 0755)
+    os.chmod(fileName, stat.S_IRWXU)
 
     oarRunCommand = ["oarsub","-n","merge-" + str(k),"-S",os.getcwd() + "/mergeRun_" + str(k)]
 

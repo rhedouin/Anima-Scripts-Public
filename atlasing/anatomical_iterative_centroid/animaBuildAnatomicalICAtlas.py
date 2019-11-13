@@ -87,7 +87,7 @@ for k in range(args.start + 1, args.num_images + 1):
         myfile.write("\n")
 
     myfile.close()
-    os.chmod(fileName, 0755)
+    os.chmod(fileName, stat.S_IRWXU)
 
     oarRunCommand = ["oarsub"]
     if previousMergeId == 0:
@@ -121,7 +121,7 @@ for k in range(args.start + 1, args.num_images + 1):
                  " -a $OAR_ARRAY_INDEX \n")
 
     myfile.close()
-    os.chmod(fileName, 0755)
+    os.chmod(fileName, stat.S_IRWXU)
 
     oarRunCommand = ["oarsub","-n","bch-" + str(k),"-S",os.getcwd() + "/bchRun_" + str(k), "-a", str(previousRegId)]
     
@@ -147,7 +147,7 @@ for k in range(args.start + 1, args.num_images + 1):
                  " -c " + str(args.num_cores) + "\n")
 
     myfile.close()
-    os.chmod(fileName, 0755)
+    os.chmod(fileName, stat.S_IRWXU)
 
     oarRunCommand = ["oarsub"]
     for jobId in jobsIds:
