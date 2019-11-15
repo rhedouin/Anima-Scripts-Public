@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!python3
 # Warning: works only on unix-like systems, not windows where "python scriptName.py..." has to be run
 
 import sys
@@ -25,7 +25,7 @@ configParser = ConfParser.RawConfigParser()
 configParser.read(configFilePath)
 
 animaDir = configParser.get("anima-scripts", 'anima')
-animaScriptsDir = configParser.get("anima-scripts",'anima-scripts-root')
+animaScriptsDir = configParser.get("anima-scripts",'anima-scripts-public-root')
 animaExtraDataDir = configParser.get("anima-scripts", 'extra-data-root')
 anima_env = os.environ.copy()
 anima_env["PATH"] += os.pathsep + animaDir
@@ -59,8 +59,8 @@ for brainImage in sys.argv[1:]:
     wf.inputs.input_node.input_file = brainImage
     wf.inputs.input_node.atlas_img_file = atlasImage
     wf.inputs.input_node.atlas_icc_file = iccImage
-    wf.inputs.input_node.out_mask_file = brainImagePrefix + "_brainMask.nrrd"
-    wf.inputs.input_node.out_masked_file = brainImagePrefix + "_masked.nrrd"
+    # wf.inputs.input_node.out_mask_file = brainImagePrefix + "_brainMask.nrrd"
+    # wf.inputs.input_node.out_masked_file = brainImagePrefix + "_masked.nrrd"
 
     datasink = Node(DataSink(), name='datasink')
     datasink.inputs.base_directory = brainImageDir
