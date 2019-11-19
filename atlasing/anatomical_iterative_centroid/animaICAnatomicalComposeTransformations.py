@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!python3
 # Warning: works only on unix-like systems, not windows where "python animaAnatomicalMergeImages.py ..." has to be run
 
 import argparse
