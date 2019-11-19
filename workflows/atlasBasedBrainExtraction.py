@@ -13,14 +13,13 @@ def create_atlas_based_brain_extraction_workflow(name='anima_brain_extraction'):
 
     output_node = Node(niu.IdentityInterface(fields=['brain_mask', 'masked_image']), name='output_node')
 
-    # Rigid registration process
-
+    # Atlas registration process
     anat_reg = wf_creator.create_anatomical_non_linear_registration_workflow(name='anat_reg', linear_block_spacing=3,
                                                                              linear_pyramid_levels=4,
                                                                              linear_last_pyramid_level=1,
                                                                              dense_search_radius=1,
                                                                              dense_pyramid_levels=4,
-                                                                             dense_last_pyramid_level=2)
+                                                                             dense_last_pyramid_level=1)
 
     # Apply transform process
     trsf_applyer = Node(interface=anima.ApplyTransformSerie(interpolation_mode='nearest'), name='trsf_applyer')
