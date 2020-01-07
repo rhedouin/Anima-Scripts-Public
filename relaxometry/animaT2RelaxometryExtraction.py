@@ -142,6 +142,7 @@ if args.gmm_out != "":
     if t1Image != "":
         multiT2Command = multiT2Command + ["--t1", t1Image]
 
+    print("Running multi T2 estimation")
     call(multiT2Command)
 
     if args.gmm_out != "":
