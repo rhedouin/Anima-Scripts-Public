@@ -35,13 +35,12 @@ parser.add_argument('-m', '--image-for-mask', type=str, default="", help="High q
 parser.add_argument('-e', '--echo-spacing', type=float, required=True, help="Echo spacing of the CPMG sequence")
 parser.add_argument('-o', '--mono-out', type=str, default="", help="Mono T2 estimation output")
 parser.add_argument('-g', '--gmm-out', type=str, default="", help="Multi T2 weights estimation output")
-parser.add_argument('--gmm-mwf-out', type=str, default="", help="MWF map estimation output")
 parser.add_argument('--no-brain-masking', action='store_true', help="Do not perform any brain masking, may be much "
                                                                     "longer")
 
 args = parser.parse_args()
-if args.mono_out == "" and args.gmm_out == "" and args.gmm_mwf_out == "":
-    print('No output was specified, please specify at least one of mono-out, gmm-out, gmm-mwf-out')
+if args.mono_out == "" and args.gmm_out == "":
+    print('No output was specified, please specify at least one of mono-out, gmm-out')
     quit()
 
 tmpFolder = tempfile.mkdtemp()
@@ -126,7 +125,7 @@ if args.mono_out != "":
     call(monoT2Command)
 
 # Multi T2 estimation
-if args.gmm_out != "" or args.gmm_mwf_out != "":
+if args.gmm_out != "":
     multiT2Command = [animaDir + "animaGMMT2RelaxometryEstimation", "-i", inputImage, "-e", str(args.echo_spacing)]
 
     if args.gmm_out != "":
@@ -135,10 +134,7 @@ if args.gmm_out != "" or args.gmm_mwf_out != "":
             outPrefix = os.path.splitext(outPrefix)[0]
 
         multiT2Command = multiT2Command + ["--out-b1", outPrefix + "_B1.nrrd", "--out-m0", outPrefix + "_M0.nrrd",
-                                           "-O", args.gmm_out]
-
-    if args.gmm_mwf_out != "":
-        multiT2Command = multiT2Command + ["-o", args.gmm_mwf_out]
+                                           "-O", args.gmm_out,"-o", outPrefix + "_MWF.nrrd"]
 
     if maskImage != "":
         multiT2Command = multiT2Command + ["-m", maskImage]
