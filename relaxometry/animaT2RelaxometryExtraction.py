@@ -76,7 +76,7 @@ if args.no_brain_masking is False:
 
         imagePrefix = os.path.splitext(args.image_for_mask)[0]
         if os.path.splitext(args.image_for_mask)[1] == '.gz':
-            t1Prefix = os.path.splitext(imagePrefix)[0]
+            imagePrefix = os.path.splitext(imagePrefix)[0]
 
         outputMask = imagePrefix + "_brainMask.nrrd"
 
