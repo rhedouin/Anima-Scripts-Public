@@ -26,6 +26,8 @@ animaDenseSVFBMRegistration = os.path.join(animaDir, "animaDenseSVFBMRegistratio
 animaTransformSerieXmlGenerator = os.path.join(animaDir, "animaTransformSerieXmlGenerator")
 animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 animaConvertImage = os.path.join(animaDir, "animaConvertImage")
+animaConcatenateImages = os.path.join(animaDir, "animaConcatenateImages")
+animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
 
 # Argument parsing
 parser = argparse.ArgumentParser(description="Propagate and fuse segmentations from multiple atlases onto a list of subjects")
@@ -107,7 +109,13 @@ for i in range(0, N):
         if "OAR_JOB_ID" in statsLine:
             jobsIds += [statsLine.split("=")[1]]
             
+    command=[animaConcatenateImages, "-o", os.path.join(outDir, "segmentations", imageBasename) + "_4D_seg.nrrd"]
+    for j in range(0, P):
+        command.append("-i")
+        command.append(os.path.join(outDir, "segmentations", imageBasename) + "_" + str(j+1) + "_seg.nrrd")
+    subprocess.call(command, stdout=open(os.devnull, "w"))        
             
-            
-            
-    ################ MAJORITY VOTING & STAPLE ??????        
+    command=[animaMajorityLabelVoting, "-i", os.path.join(outDir, "segmentations", imageBasename) + "_4D_seg.nrrd", "-o", os.path.join(outDir, "segmentations", imageBasename) + "_consensus_seg.nrrd"]
+    subprocess.call(command, stdout=open(os.devnull, "w"))   
+    
+    ################ STAPLE OPTION ?????? ################      
