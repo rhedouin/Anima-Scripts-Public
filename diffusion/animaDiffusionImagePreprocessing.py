@@ -89,12 +89,12 @@ elif not (args.dicom == "") and (args.grad == ""):
         if image[0x0019, 0x100d].value == 'NONE' or bval == 0:
             bvec = [0, 0, 0]
         else:
-            buffer = struct.unpack('ddd', image[0x0019, 0x100e].value)
-            img_plane_position = image[0x0020, 0x0037].value
-            vec = np.array(buffer)
-            V1 = np.array([float(img_plane_position[0]), float(img_plane_position[1]), float(img_plane_position[2])])
-            V2 = np.array([float(img_plane_position[3]), float(img_plane_position[4]), float(img_plane_position[5])])
-            V3 = np.cross(V1, V2)
+            vec = []
+            if type(image[0x0019, 0x100e].value) == type(list()):
+                vec = np.array(image[0x0019, 0x100e].value)
+            else:
+                buff = struct.unpack('ddd', image[0x0019, 0x100e].value)
+                vec = np.array(buff)
 
             bvec = np.zeros(3)
             bvec = vec
