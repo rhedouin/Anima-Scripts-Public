@@ -201,7 +201,7 @@ outputImage = tmpDWIImagePrefix + "_or.nrrd"
 
 # Then perform denoising
 if args.no_denoising is False:
-    denoisingCommand = [animaDir + "animaNLMeansTemporal", "-i", outputImage, "-b", "0.5", "-o",
+    denoisingCommand = [animaDir + "animaNLMeansTemporal", "-i", outputImage, "-b", "0.5", "-n", "3", "-o",
                         tmpDWIImagePrefix + "_nlm.nrrd"]
     call(denoisingCommand)
     outputImage = tmpDWIImagePrefix + "_nlm.nrrd"
