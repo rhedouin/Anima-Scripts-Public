@@ -127,7 +127,7 @@ for i in range(0, N):
     myfile2.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
     myfile2.write("#OAR -O " + os.path.join(outDir, "out" , imageBasename) + "_fusion.%jobid%.output\n")
     myfile2.write("#OAR -E " + os.path.join(outDir, "err" , imageBasename) + "_fusion.%jobid%.error\n")
-    myfile2.write(animaMajorityLabelVoting + " -i " + listSeg + " -o " + os.path.join(outDir, "segmentations", imageBasename) + "_consensus_seg.nrrd \n")
+    myfile2.write(animaMajorityLabelVoting + " -i " + listSeg + " -o " + os.path.join(outDir, imageBasename) + "_consensus_seg.nrrd \n")
     myfile2.close()
     
     os.chmod(filename2, stat.S_IRWXU)
