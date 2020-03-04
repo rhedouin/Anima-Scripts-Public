@@ -108,14 +108,17 @@ for i in range(0, N):
     for statsLine in procStat.stdout:
         if "OAR_JOB_ID" in statsLine:
             jobsIds += [statsLine.split("=")[1]]
-            
-    command=[animaConcatenateImages, "-o", os.path.join(outDir, "segmentations", imageBasename) + "_4D_seg.nrrd"]
+     
+    listSeg=os.path.join(outDir, "segmentations", imageBasename) + "_listSeg.txt"
+    myfile2 = open(listSeg,"w")
     for j in range(0, P):
-        command.append("-i")
-        command.append(os.path.join(outDir, "segmentations", imageBasename) + "_" + str(j+1) + "_seg.nrrd")
-    subprocess.call(command, stdout=open(os.devnull, "w"))        
-            
-    command=[animaMajorityLabelVoting, "-i", os.path.join(outDir, "segmentations", imageBasename) + "_4D_seg.nrrd", "-o", os.path.join(outDir, "segmentations", imageBasename) + "_consensus_seg.nrrd"]
+        myfile2.write(os.path.join(outDir, "segmentations", imageBasename) + "_" + str(j+1) + "_seg.nrrd\n")
+    myfile2.close()
+                
+    command=[animaMajorityLabelVoting, "-i", listSeg, "-o", os.path.join(outDir, "segmentations", imageBasename) + "_consensus_seg.nrrd"]
+    for jobId in jobsIds:
+        command += ["-a",jobId]
+    
     subprocess.call(command, stdout=open(os.devnull, "w"))   
     
     ################ STAPLE OPTION ?????? ################      
