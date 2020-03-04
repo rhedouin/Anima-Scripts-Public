@@ -65,6 +65,8 @@ if not os.path.exists(os.path.join(outDir, "segmentations")):
 for i in range(0, N):
     image=images[i]  
     
+    # Registrations
+    
     command = [animaConvertImage, "-i", image, "-I"]
     convert_output = subprocess.check_output(command, universal_newlines=True)
     size_info = convert_output.split('\n')[1].split('[')[1].split(']')[0]
@@ -108,17 +110,32 @@ for i in range(0, N):
     for statsLine in procStat.stdout:
         if "OAR_JOB_ID" in statsLine:
             jobsIds += [statsLine.split("=")[1]]
-     
-    listSeg=os.path.join(outDir, "segmentations", imageBasename) + "_listSeg.txt"
-    myfile2 = open(listSeg,"w")
-    for j in range(0, P):
-        myfile2.write(os.path.join(outDir, "segmentations", imageBasename) + "_" + str(j+1) + "_seg.nrrd\n")
-    myfile2.close()
-                
-    command=[animaMajorityLabelVoting, "-i", listSeg, "-o", os.path.join(outDir, "segmentations", imageBasename) + "_consensus_seg.nrrd"]
-    for jobId in jobsIds:
-        command += ["-a",jobId]
     
-    subprocess.call(command, stdout=open(os.devnull, "w"))   
+    # Label fusion
+    
+    listSeg=os.path.join(outDir, "segmentations", imageBasename) + "_listSeg.txt"
+    segFile = open(listSeg,"w")
+    for j in range(0, P):
+        segFile.write(os.path.join(outDir, "segmentations", imageBasename) + "_" + str(j+1) + "_seg.nrrd\n")
+    segFile.close()
+
+    filename2 = os.path.join(outDir, "fuseRun_" + imageBasename)
+    myfile2 = open(filename2,"w")
+    myfile2.write("#!/bin/bash\n")
+    if args.num_cores<=16:
+        myfile2.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=01:59:00\n")
+    myfile2.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=01:59:00\n")
+    myfile2.write("#OAR -O " + os.path.join(outDir, "out" , imageBasename) + "_fusion.%jobid%.output\n")
+    myfile2.write("#OAR -E " + os.path.join(outDir, "err" , imageBasename) + "_fusion.%jobid%.error\n")
+    myfile2.write(animaMajorityLabelVoting + " -i " + listSeg + " -o " + os.path.join(outDir, "segmentations", imageBasename) + "_consensus_seg.nrrd \n")
+    myfile2.close()
+    
+    os.chmod(filename2, stat.S_IRWXU)
+    oarFuseCommand = ["oarsub","-n","fusion_" + imageBasename,"-S", filename2]            
+
+    for jobId in jobsIds:
+        oarFuseCommand += ["-a",jobId]
+    
+    subprocess.call(oarFuseCommand, stdout=open(os.devnull, "w"))   
     
     ################ STAPLE OPTION ?????? ################      
