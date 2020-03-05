@@ -136,6 +136,4 @@ for i in range(0, N):
     for jobId in jobsIds:
         oarFuseCommand += ["-a",jobId]
     
-    subprocess.call(oarFuseCommand, stdout=open(os.devnull, "w"))   
-    
-    ################ STAPLE OPTION ?????? ################      
+    subprocess.call(oarFuseCommand, stdout=open(os.devnull, "w"))
