@@ -67,18 +67,6 @@ for i in range(0, N):
     
     # Registrations
     
-    command = [animaConvertImage, "-i", image, "-I"]
-    convert_output = subprocess.check_output(command, universal_newlines=True)
-    size_info = convert_output.split('\n')[1].split('[')[1].split(']')[0]
-    large_image = False
-    for k in range(0, 3):
-        size_tmp = int(size_info.split(', ')[k])
-        if size_tmp >= 350:
-            large_image = True
-            break
-    pyramidOptions = "-p 4 -l 1"
-    if large_image:
-        pyramidOptions = "-p 5 -l 2"
     imagePrefix = os.path.splitext(image)[0]
     if os.path.splitext(image)[1] == '.gz':
         imagePrefix = os.path.splitext(imagePrefix)[0]
@@ -97,8 +85,8 @@ for i in range(0, N):
     myfile.write("#OAR -E " + os.path.join(outDir, "err" , imageBasename) + ".%jobid%.error\n")
     myfile.write("anats=(" + " ".join(anats) + ")\n")
     myfile.write("segs=(" + " ".join(segs) + ")\n")            
-    myfile.write(animaPyramidalBMRegistration + " -m ${anats[$(($OAR_ARRAY_INDEX-1))]} -r " + image + " -o " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_aff.nrrd -O " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_aff_tr.txt --sp 3 --ot 2 " + pyramidOptions + "\n" )
-    myfile.write(animaDenseSVFBMRegistration + " -m " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_aff.nrrd -r " + image + " -o " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_diffeo.nrrd -O " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_diffeo_tr.nrrd --sr 1 " + pyramidOptions + "\n" )
+    myfile.write(animaPyramidalBMRegistration + " -m ${anats[$(($OAR_ARRAY_INDEX-1))]} -r " + image + " -o " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_aff.nrrd -O " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_aff_tr.txt --sp 3 --ot 2 -p 4 -l 0" + "\n" )
+    myfile.write(animaDenseSVFBMRegistration + " -m " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_aff.nrrd -r " + image + " -o " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_diffeo.nrrd -O " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_diffeo_tr.nrrd --sr 1 -p 3 -l 0" + "\n" )
     myfile.write(animaTransformSerieXmlGenerator + " -i " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_aff_tr.txt -i " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_diffeo_tr.nrrd -o " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_tr.xml\n" )
     myfile.write(animaApplyTransformSerie + " -i ${segs[$(($OAR_ARRAY_INDEX-1))]} -g " + image + " -t " + os.path.join(outDir, "registrations", imageBasename) + "_${OAR_ARRAY_INDEX}_tr.xml" + " -o " + os.path.join(outDir, "segmentations", imageBasename) + "_${OAR_ARRAY_INDEX}_seg.nrrd -n nearest\n" )
     myfile.close()
