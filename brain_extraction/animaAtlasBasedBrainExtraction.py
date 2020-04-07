@@ -38,7 +38,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-S', '--second-step', action='store_true',
                     help="Perform second step of atlas based cropping (might crop part of the external part of the brain)")
 
-parser.add_argument('-i', '--input', type=str, required=True, help='DWI file to process')
+parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
 
 args = parser.parse_args()
 
