@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/python3
 # Warning: works only on unix-like systems, not windows where "python animaBuildAnatomicalAtlas.py ..." has to be run
 
 import argparse

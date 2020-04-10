@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/python3
 # Warning: works only on unix-like systems, not win where "python animaRelaxometryGMMExtraction.py ..." has to be run
 
 import sys
