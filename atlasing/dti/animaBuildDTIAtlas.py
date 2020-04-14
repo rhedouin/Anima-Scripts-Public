@@ -46,22 +46,35 @@ if os.path.exists('residualDir'):
 
 os.makedirs('residualDir')
 
+filesExtension = ""
 if args.ref_image == "":
     ref = args.data_prefix + '_1'
     # In the first iteration we take the first image as reference, then it is used in the dataset
     firstImage = 2
 else:
     ref = os.path.splitext(args.ref_image)[0]
-    if os.path.splitext(args.ref_image)[1] == '.gz' :
+    filesExtension = os.path.splitext(args.ref_image)[1]
+    if filesExtension == '.gz':
+        filesExtension = os.path.splitext(ref)[1] + filesExtension
         ref = os.path.splitext(ref)[0]
     firstImage = 1
 
 prefixBase = os.path.dirname(args.data_prefix)
 prefix = os.path.basename(args.data_prefix)
 
+# Get extension of files if a reference image was not given
+if filesExtension == "":
+    refBasename = os.path.basename(ref)
+    filesList = os.listdir(prefixBase)
+    for f in filesList:
+        if refBasename in f:
+            filesExtension = os.path.splitext(f)[1]
+            if filesExtension == '.gz':
+                filesExtension = os.path.splitext(filesExtension)[1] + filesExtension
+
 previousMergeId = 0
 
-for k in range(1,args.num_iterations + 1):
+for k in range(1, args.num_iterations + 1):
     if os.path.exists('it_' + str(k) + '_done'):
         ref = "averageDTI" + str(k)
         firstImage = 1
@@ -78,7 +91,7 @@ for k in range(1,args.num_iterations + 1):
     fileName = 'iterRun_' + str(k)
     myfile = open(fileName,"w")
     myfile.write("#!/bin/bash\n")
-    if args.num_cores<=16:
+    if args.num_cores <= 16:
         myfile.write("#OAR -l {hyperthreading=\'NO\'}/nodes=1/core=" + str(args.num_cores) + ",walltime=07:59:00\n")
     myfile.write("#OAR -l {hyperthreading=\'YES\'}/nodes=1/core=" + str(nCoresPhysical) + ",walltime=07:59:00\n")
     myfile.write("#OAR --array " + str(numJobs) + "\n")
@@ -91,12 +104,12 @@ for k in range(1,args.num_iterations + 1):
         numIt=0
         myfile.write("let index=${OAR_ARRAY_INDEX}+1\n")
         myfile.write(os.path.join(animaScriptsDir,"atlasing/dti/animaRegisterDTImage.py") +
-                     " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
+                     " -d " + os.getcwd() + " -r " + ref + filesExtension + " -B " + prefixBase + " -p " + prefix +
                      " -n $index -b " + str(args.bch_order) + " -c " + str(args.num_cores))
     else:
         numIt=k
         myfile.write(os.path.join(animaScriptsDir,"atlasing/dti/animaRegisterDTImage.py") +
-                     " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix +
+                     " -d " + os.getcwd() + " -r " + ref + filesExtension + " -B " + prefixBase + " -p " + prefix +
                      " -n $OAR_ARRAY_INDEX -b " + str(args.bch_order) + " -c " + str(args.num_cores))
 
     if args.rigid is True:
@@ -131,7 +144,7 @@ for k in range(1,args.num_iterations + 1):
     myfile.write("cd " + os.getcwd() + "\n")
     myfile.write(os.path.join(animaScriptsDir,"atlasing/dti/animaMergeDTImages.py") +
                  " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(numIt) +
-                 " -n " + str(args.num_images) + " -r " + ref + " -c " + str(args.num_cores))
+                 " -n " + str(args.num_images) + " -r " + ref + " -e " + filesExtension + " -c " + str(args.num_cores))
 
     if not args.weights_file == "":
         myfile.write(" -w " + args.weights_file + "\n")

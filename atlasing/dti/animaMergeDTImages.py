@@ -28,6 +28,7 @@ parser = argparse.ArgumentParser(
     description="Builds a new average anatomical form from previously registered images.")
 parser.add_argument('-d', '--ref-dir', type=str, required=True, help='Reference (working) folder')
 parser.add_argument('-r', '--ref-image', type=str, required=True, help='Reference image')
+parser.add_argument('-e', '--files-extension', type=str, required=True, help='Input files extension')
 parser.add_argument('-B', '--prefix-base', type=str, required=True, help='Prefix base')
 parser.add_argument('-p', '--prefix', type=str, required=True, help='Prefix')
 parser.add_argument('-w', '--weights', type=str, default="", help='Weights text file')
@@ -61,81 +62,83 @@ while numData < nimTest:
 
 # if ok proceed
 if args.num_iter == 0:
-    command = [animaCreateImage,"-o",os.path.join("tempDir",args.prefix + "_1_nonlinear_tr.nii.gz"),
-               "-b","0","-g",os.path.join(args.prefix_base,args.prefix + "_1.nii.gz"),"-v","3"]
+    command = [animaCreateImage,"-o",os.path.join("tempDir",args.prefix + "_1_nonlinear_tr.nrrd"),
+               "-b","0","-g",os.path.join(args.prefix_base,args.prefix + "_1" + args.files_extension),"-v","3"]
     call(command)
 
 myfile = open("sumNonlinear.txt","w")
 for a in range(1,args.num_images + 1):
-    myfile.write(os.path.join("tempDir",args.prefix + "_" + str(a) + "_nonlinear_tr.nii.gz") + "\n")
+    myfile.write(os.path.join("tempDir",args.prefix + "_" + str(a) + "_nonlinear_tr.nrrd") + "\n")
 
 myfile.close()
 
-command = [animaAverageImages, "-i", "sumNonlinear.txt","-o",os.path.join("tempDir","sumNonlinear_tr.nii.gz")]
+command = [animaAverageImages, "-i", "sumNonlinear.txt","-o",os.path.join("tempDir","sumNonlinear_tr.nrrd")]
 if not args.weights == "":
     command += ["-w",args.weights]
 
 call(command)
 
-command = [animaImageArithmetic,"-i",os.path.join("tempDir","sumNonlinear_tr.nii.gz"),"-M","-1",
-           "-o",os.path.join("tempDir", "sumNonlinear_inv_tr.nii.gz")]
+command = [animaImageArithmetic,"-i",os.path.join("tempDir","sumNonlinear_tr.nrrd"),"-M","-1",
+           "-o",os.path.join("tempDir", "sumNonlinear_inv_tr.nrrd")]
 call(command)
 
 myfileImages = open("refIms.txt","w")
 myfileMasks = open("masksIms.txt","w")
 for a in range(1,args.num_images+1):
     if a == 1 and args.num_iter == 1:
-        command = [animaTransformSerieXmlGenerator,"-i",os.path.join("tempDir", "sumNonlinear_inv_tr.nii.gz"),
+        command = [animaTransformSerieXmlGenerator,"-i",os.path.join("tempDir", "sumNonlinear_inv_tr.nrrd"),
                    "-o",os.path.join("tempDir", "trsf_" + str(a) + ".xml")]
         call(command)
     else:
         command = [animaTransformSerieXmlGenerator,"-i",os.path.join("tempDir", args.prefix + "_" + str(a) + "_linear_tr.txt"),
-                   "-i", os.path.join("tempDir",args.prefix + "_" + str(a) + "_nonlinear_tr.nii.gz"),
-                   "-i",os.path.join("tempDir","sumNonlinear_inv_tr.nii.gz"),
+                   "-i", os.path.join("tempDir",args.prefix + "_" + str(a) + "_nonlinear_tr.nrrd"),
+                   "-i",os.path.join("tempDir","sumNonlinear_inv_tr.nrrd"),
                    "-o",os.path.join("tempDir","trsf_" + str(a) + ".xml")]
         call(command)
 
-    command = [animaTensorApplyTransformSerie,"-i",os.path.join(args.prefix_base,args.prefix + "_" + str(a) + ".nii.gz"),
-               "-t",os.path.join("tempDir","trsf_" + str(a) + ".xml"),"-g",args.ref_image + ".nii.gz",
-               "-o",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nii.gz"),"-p",str(args.num_cores)]
+    command = [animaTensorApplyTransformSerie,"-i",os.path.join(args.prefix_base,args.prefix + "_" + str(a) + args.files_extension),
+               "-t",os.path.join("tempDir","trsf_" + str(a) + ".xml"),"-g",args.ref_image + args.files_extension,
+               "-o",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nrrd"),"-p",str(args.num_cores)]
     call(command)
-    myfileImages.write(os.path.join("tempDir", args.prefix + "_" + str(a) + "_at.nii.gz\n"))
+    myfileImages.write(os.path.join("tempDir", args.prefix + "_" + str(a) + "_at.nrrd\n"))
 
-    command = [animaComputeDTIScalarMaps,"-i",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nii.gz"),
-               "-a",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at_ADC.nii.gz")]
+    command = [animaComputeDTIScalarMaps,"-i",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nrrd"),
+               "-a",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at_ADC.nrrd")]
     call(command)
 
-    command = [animaThrImage,"-i",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at_ADC.nii.gz"),
-               "-t","0","-o",os.path.join("tempDir","Mask_" + str(a) + "_at.nii.gz")]
+    command = [animaThrImage,"-i",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at_ADC.nrrd"),
+               "-t","0","-o",os.path.join("tempDir","Mask_" + str(a) + "_at.nrrd")]
     call(command)
-    myfileMasks.write(os.path.join("tempDir","Mask_" + str(a) + "_at.nii.gz\n"))
+    myfileMasks.write(os.path.join("tempDir","Mask_" + str(a) + "_at.nrrd\n"))
 
 myfileImages.close()
 myfileMasks.close()
 
 if args.num_iter == 0:
-    command = [animaAverageImages,"-i","refIms.txt","-o","averageDTI1.nii.gz","-m","masksIms.txt"]
+    command = [animaAverageImages,"-i","refIms.txt","-o","averageDTI1.nrrd","-m","masksIms.txt"]
 else:
-    command = [animaAverageImages,"-i","refIms.txt","-o","averageDTI" + str(args.num_iter) + ".nii.gz","-m","masksIms.txt"]
+    command = [animaAverageImages,"-i","refIms.txt",
+               "-o","averageDTI" + str(args.num_iter) + ".nrrd","-m","masksIms.txt"]
 
 if not args.weights == "":
     command += ["-w",args.weights]
 call(command)
 
-command = [animaAverageImages,"-i","masksIms.txt","-o",os.path.join("tempDir","meanMasks_at.nii.gz")]
+command = [animaAverageImages,"-i","masksIms.txt","-o",os.path.join("tempDir","meanMasks_at.nrrd")]
 if not args.weights == "":
     command += ["-w",args.weights]
 call(command)
 
-command = [animaThrImage,"-i",os.path.join("tempDir","meanMasks_at.nii.gz"),"-t","0.25",
-           "-o",os.path.join("tempDir","thrMeanMasks_at.nii.gz")]
+command = [animaThrImage,"-i",os.path.join("tempDir","meanMasks_at.nrrd"),"-t","0.25",
+           "-o",os.path.join("tempDir","thrMeanMasks_at.nrrd")]
 call(command)
 
-command = [animaMaskImage,"-i","averageDTI" + str(args.num_iter) + ".nii.gz","-m",os.path.join("tempDir","thrMeanMasks_at.nii.gz"),
-           "-o","averageDTI" + str(args.num_iter) + ".nii.gz"]
+command = [animaMaskImage,"-i","averageDTI" + str(args.num_iter) + ".nrrd",
+           "-m",os.path.join("tempDir","thrMeanMasks_at.nrrd"),
+           "-o","averageDTI" + str(args.num_iter) + ".nrrd"]
 call(command)
 
-if os.path.exists("averageDTI" + str(args.num_iter) + ".nii.gz"):
+if os.path.exists("averageDTI" + str(args.num_iter) + ".nrrd"):
     open("it_" + str(args.num_iter) + "_done","w").close()
     t = args.num_iter + 1
     if os.path.exists("iterRun_" + str(t)):

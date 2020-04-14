@@ -51,22 +51,28 @@ animaDenseTransformArithmetic = os.path.join(animaDir,"animaDenseTransformArithm
 animaApplyTransformSerie = os.path.join(animaDir,"animaApplyTransformSerie")
 animaTensorApplyTransformSerie = os.path.join(animaDir,"animaTensorApplyTransformSerie")
 
+filesExtension = os.path.splitext(args.ref_image)[1]
+if filesExtension == '.gz':
+    filesExtension = os.path.splitext(os.path.splitext(args.ref_image)[0])[1] + filesExtension
+
 # Extract DTI scalar map
-command = [animaComputeDTIScalarMaps,"-i",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + ".nii.gz"),
-           "-a",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + "_ADC.nii.gz")]
+command = [animaComputeDTIScalarMaps,
+           "-i", os.path.join(args.prefix_base, args.prefix + "_" + str(args.num_image) + filesExtension),
+           "-a", os.path.join(args.prefix_base, args.prefix + "_" + str(args.num_image) + "_ADC.nrrd")]
 call(command)
 
-command = [animaComputeDTIScalarMaps,"-i",args.ref_image,
-           "-a",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_ADC.nii.gz")]
+command = [animaComputeDTIScalarMaps, "-i", args.ref_image, "-a",
+           os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_ref_ADC.nrrd")]
 call(command)
 
 # Rigid / affine registration
-command = [animaPyramidalBMRegistration,"-r",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_ADC.nii.gz"),
-           "-m",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + "_ADC.nii.gz"),
-           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_ADC.nii.gz"),
-           "-O",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_tr.txt"),
-           "--out-rigid",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_nr_tr.txt"),
-           "--ot","2","-p","3","-l","0","-I","2","-T",str(args.num_cores),"--sym-reg","2","-s","0"]
+command = [animaPyramidalBMRegistration,
+           "-r", os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_ref_ADC.nrrd"),
+           "-m", os.path.join(args.prefix_base, args.prefix + "_" + str(args.num_image) + "_ADC.nrrd"),
+           "-o", os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_aff_ADC.nrrd"),
+           "-O", os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_aff_tr.txt"),
+           "--out-rigid", os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_aff_nr_tr.txt"),
+           "--ot", "2", "-p", "3", "-l", "0", "-I", "2", "-T", str(args.num_cores), "--sym-reg", "2", "-s", "0"]
 call(command)
 
 # Apply to DTI and prepare data crop for better registration
@@ -76,36 +82,37 @@ command = [animaTransformSerieXmlGenerator,"-i",os.path.join(basePrefBase,"tempD
 call(command)
 
 command = [animaCreateImage,"-b","1","-v","1","-g",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + ".nii.gz"),
-           "-o",os.path.join(basePrefBase,"tempDir","tmpFullMask_" + str(args.num_image) + ".nii.gz")]
+           "-o",os.path.join(basePrefBase,"tempDir","tmpFullMask_" + str(args.num_image) + ".nrrd")]
 call(command)
 
-command = [animaApplyTransformSerie,"-g",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_ADC.nii.gz"),
-           "-i",os.path.join(basePrefBase,"tempDir","tmpFullMask_" + str(args.num_image) + ".nii.gz"),
+command = [animaApplyTransformSerie,"-g",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_ADC.nrrd"),
+           "-i",os.path.join(basePrefBase,"tempDir","tmpFullMask_" + str(args.num_image) + ".nrrd"),
            "-t",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_tr.xml"),
-           "-o",os.path.join(basePrefBase,"tempDir","tmpMask_" + str(args.num_image) + ".nii.gz"),
+           "-o",os.path.join(basePrefBase,"tempDir","tmpMask_" + str(args.num_image) + ".nrrd"),
            "-n","nearest","-p",str(args.num_cores)]
 call(command)
 
-command = [animaMaskImage,"-i",args.ref_image,"-m",os.path.join(basePrefBase,"tempDir","tmpMask_" + str(args.num_image) + ".nii.gz"),
-           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_c.nii.gz")]
+command = [animaMaskImage, "-i", args.ref_image,
+           "-m", os.path.join(basePrefBase, "tempDir", "tmpMask_" + str(args.num_image) + ".nrrd"),
+           "-o", os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_ref_c.nrrd")]
 call(command)
 
-command = [animaTensorApplyTransformSerie,"-i",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + ".nii.gz"),
+command = [animaTensorApplyTransformSerie,"-i",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + filesExtension),
            "-g",args.ref_image,"-t",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_tr.xml"),
-           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nii.gz"),"-p",str(args.num_cores)]
+           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nrrd"),"-p",str(args.num_cores)]
 call(command)
 
 # Non-Rigid registration
 
 # For basic atlases
-command = [animaDenseTensorSVFBMRegistration,"-r",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_c.nii.gz"),
-           "-m",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nii.gz"),
-           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal.nii.gz"),
-           "-O",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nii.gz"),
+command = [animaDenseTensorSVFBMRegistration,"-r",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_c.nrrd"),
+           "-m",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nrrd"),
+           "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal.nrrd"),
+           "-O",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nrrd"),
            "--sr","1","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","3","-s","0.001"]
 call(command)
 
-os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_c.nii.gz"))
+os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_c.nrrd"))
 
 if args.rigid is True:
     shutil.move(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_nr_tr.txt"),
@@ -117,32 +124,32 @@ if args.rigid is True:
     call(command)
 
     command = [animaLinearTransformToSVF,"-i",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.txt"),
-               "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nii.gz"),
+               "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nrrd"),
                "-g",args.ref_image]
     call(command)
 
-    command = [animaDenseTransformArithmetic,"-i",os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nii.gz"),
-               "-c",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nii.gz"),
+    command = [animaDenseTransformArithmetic,"-i",os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nrrd"),
+               "-c",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nrrd"),
                "-b",str(args.bch_order),
-               "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz")]
+               "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd")]
     call(command)
 else:
     shutil.move(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_tr.txt"),
                 os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linear_tr.txt"))
-    shutil.move(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nii.gz"),
-                os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"))
+    shutil.move(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nrrd"),
+                os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd"))
 
-if os.path.exists(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz")):
-    os.remove(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"))
+if os.path.exists(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd")):
+    os.remove(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd"))
 
-os.symlink(os.path.join(os.getcwd(),"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"),
-           os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz"))
+os.symlink(os.path.join(os.getcwd(),"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd"),
+           os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd"))
 
-if os.path.exists(os.path.join(os.getcwd(),"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nii.gz")):
+if os.path.exists(os.path.join(os.getcwd(),"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd")):
     open(os.path.join(basePrefBase,"residualDir",args.prefix + "_" + str(args.num_image) + "_flag"), 'a').close()
 
-if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nii.gz")):
-    os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nii.gz"))
+if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nrrd")):
+    os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nrrd"))
 
-if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nii.gz")):
-    os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nii.gz"))
+if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nrrd")):
+    os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_linearaddon_tr.nrrd"))
