@@ -44,6 +44,8 @@ parser.add_argument('-t', '--t1', type=str, default="", help="T1 image for brain
 parser.add_argument('--no-brain-masking', action='store_true', help="Do not perform any brain masking")
 parser.add_argument('--no-eddy-correction', action='store_true',
                     help="Do not perform Eddy current distortion correction")
+parser.add_argument('--register-t1-on-dwi', action='store_true',
+                    help="T1 registration on DWI is needed as they were not acquired in the same session")
 parser.add_argument('-i', '--input', type=str, required=True, help='DWI file to process')
 
 args = parser.parse_args()
@@ -196,7 +198,11 @@ if args.no_disto_correction is False:
 
         correctionCommand = [animaPyramidalBMRegistration, "-r", tmpDWIImagePrefix + "_B0.nrrd",
                              "-m", T1Prefix + "_masked.nrrd", "-o", tmpT1Prefix + "_rig.nrrd",
-                             "-O", tmpT1Prefix + "_rig_tr.txt", "-p", "4", "-l", "1", "--sp", "2", "-I", "0"]
+                             "-O", tmpT1Prefix + "_rig_tr.txt", "-p", "4", "-l", "1", "--sp", "2"]
+        if args.register_t1_on_dwi is True:
+            correctionCommand += ["-I", "1"]
+        else:
+            correctionCommand += ["-I", "0"]
         call(correctionCommand)
 
         command = [animaTransformSerieXmlGenerator, "-i", tmpT1Prefix + "_rig_tr.txt", "-o",
@@ -267,7 +273,13 @@ if args.no_brain_masking is False:
         t1RegistrationCommand = [animaPyramidalBMRegistration, "-r",
                                  tmpDWIImagePrefix + "_forBrainExtract.nrrd", "-m", T1Prefix + "_masked.nrrd", "-o",
                                  tmpT1Prefix + "_rig.nrrd", "-O", tmpT1Prefix + "_rig_tr.txt", "-p", "4", "-l", "1",
-                                 "--sp", "2", "-I", "0"]
+                                 "--sp", "2"]
+
+        if args.register_t1_on_dwi is True:
+            t1RegistrationCommand += ["-I", "1"]
+        else:
+            t1RegistrationCommand += ["-I", "0"]
+
         call(t1RegistrationCommand)
 
         command = [animaTransformSerieXmlGenerator, "-i", tmpT1Prefix + "_rig_tr.txt", "-o",
