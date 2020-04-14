@@ -124,7 +124,7 @@ else:
     copyfile(brainImageRoughMasked,brainImagePrefix + "_masked.nrrd")
     copyfile(brainImagePrefix + "_rough_brainMask.nrrd",brainImagePrefix + "_brainMask.nrrd")
 
-map(os.remove, glob.glob(brainImagePrefix + "*_rig*"))
-map(os.remove, glob.glob(brainImagePrefix + "*_aff*"))
-map(os.remove, glob.glob(brainImagePrefix + "*_nl*"))
-map(os.remove, glob.glob(brainImagePrefix + "*_rough*"))
+map(os.remove, glob.glob(brainImagePrefix + "_rig*"))
+map(os.remove, glob.glob(brainImagePrefix + "_aff*"))
+map(os.remove, glob.glob(brainImagePrefix + "_nl*"))
+map(os.remove, glob.glob(brainImagePrefix + "_rough*"))
