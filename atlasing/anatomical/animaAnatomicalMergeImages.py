@@ -59,7 +59,7 @@ while numData < nimTest:
 # if ok proceed
 if args.num_iter == 0:
     # Write identity transform
-    myfile = open(os.path.join("tempDir",args.prefix + "_1_linear_tr.txt"),w)
+    myfile = open(os.path.join("tempDir",args.prefix + "_1_linear_tr.txt"),"w")
     myfile.write("#Insight Transform File V1.0\n")
     myfile.write("# Transform 0\n")
     myfile.write("Transform: AffineTransform_double_3_3\n")
