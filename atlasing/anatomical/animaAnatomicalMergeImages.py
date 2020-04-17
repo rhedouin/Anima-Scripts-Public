@@ -133,12 +133,22 @@ if os.path.exists(os.path.join("Masks","Mask_1" + args.files_extension)):
 
 call(command)
 
-if os.path.exists("averageForm" + str(args.num_iter) + ".nrrd"):
-    open("it_" + str(args.num_iter) + "_done","w").close()
-    t = args.num_iter + 1
-    if os.path.exists("iterRun_" + str(t)):
-        shutil.rmtree("residualDir")
-        shutil.rmtree("tempDir")
-        os.makedirs('tempDir')
-        os.makedirs('residualDir')
-        os.remove("iterRun_" + str(args.num_iter))
+if args.num_iter == 0:
+    if os.path.exists("averageForm1.nrrd"):
+        open("it_1_done","w").close()
+        if os.path.exists("iterRun_2"):
+            shutil.rmtree("residualDir")
+            shutil.rmtree("tempDir")
+            os.makedirs('tempDir')
+            os.makedirs('residualDir')
+            os.remove("iterRun_1")
+else:
+    if os.path.exists("averageForm" + str(args.num_iter) + ".nrrd"):
+        open("it_" + str(args.num_iter) + "_done","w").close()
+        t = args.num_iter + 1
+        if os.path.exists("iterRun_" + str(t)):
+            shutil.rmtree("residualDir")
+            shutil.rmtree("tempDir")
+            os.makedirs('tempDir')
+            os.makedirs('residualDir')
+            os.remove("iterRun_" + str(args.num_iter))
