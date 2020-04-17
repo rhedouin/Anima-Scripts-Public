@@ -4,6 +4,7 @@
 import argparse
 import os
 import glob
+import stat
 import sys
 import subprocess
 import shutil
