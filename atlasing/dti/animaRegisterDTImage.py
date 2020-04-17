@@ -81,7 +81,7 @@ command = [animaTransformSerieXmlGenerator,"-i",os.path.join(basePrefBase,"tempD
            "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff_tr.xml")]
 call(command)
 
-command = [animaCreateImage,"-b","1","-v","1","-g",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + ".nii.gz"),
+command = [animaCreateImage,"-b","1","-v","1","-g",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + filesExtension),
            "-o",os.path.join(basePrefBase,"tempDir","tmpFullMask_" + str(args.num_image) + ".nrrd")]
 call(command)
 
