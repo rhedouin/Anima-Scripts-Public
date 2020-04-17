@@ -61,8 +61,8 @@ for k in range(args.start + 1, args.num_images + 1):
 
     print("*************Incorporating image: " + str(k) + " in atlas: " + ref)
 
-    map(os.remove, glob.glob("residualDir/" + prefix + '_*_nl_tr.nii.gz'))
-    map(os.remove, glob.glob("residualDir/" + prefix + '_*_flag'))
+    for f in glob.glob("residualDir/" + prefix + '_*_nl_tr.nii.gz') + glob.glob("residualDir/" + prefix + '_*_flag'):
+        os.remove(f)
 
     nCoresPhysical = int(args.num_cores / 2)
 
