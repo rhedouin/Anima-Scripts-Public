@@ -58,6 +58,15 @@ while numData < nimTest:
 
 # if ok proceed
 if args.num_iter == 0:
+    # Write identity transform
+    myfile = open(os.path.join("tempDir",args.prefix + "_1_linear_tr.txt"),w)
+    myfile.write("#Insight Transform File V1.0\n")
+    myfile.write("# Transform 0\n")
+    myfile.write("Transform: AffineTransform_double_3_3\n")
+    myfile.write("Parameters: 1 0 0 0 1 0 0 0 1 0 0 0\n")
+    myfile.write("FixedParameters: 0 0 0\n")
+    myfile.close()
+
     command = [animaCreateImage,"-o",os.path.join("tempDir",args.prefix + "_1_nonlinear_tr.nrrd"),
                "-b","0","-g",os.path.join(args.prefix_base,args.prefix + "_1" + args.files_extension),"-v","3"]
     call(command)
