@@ -99,7 +99,11 @@ for i in range(0, len(atlasAge)):
     os.makedirs(os.path.join(outDir, "atlas_"+str(i+1)))
     os.makedirs(os.path.join(outDir, "atlas_"+str(i+1), prefix[0]))
     for j in range(0, len(sub)):
-        dest = os.path.join(outDir, "atlas_"+str(i+1), prefix[0], prefix[1]+"_"+str(j+1)+".nii.gz")
+        fileExtension = os.path.splitext(sub[j])[1]
+        if fileExtension == '.gz':
+            fileExtension = os.path.splitext(os.path.splitext(sub[j])[0])[1] + fileExtension
+
+        dest = os.path.join(outDir, "atlas_"+str(i+1), prefix[0], prefix[1]+"_"+str(j+1)+fileExtension)
         shutil.copyfile(sub[j], str(dest))
         
     np.savetxt(os.path.join(outDir, "atlas_"+str(i+1),"weights.txt"),w)

@@ -82,7 +82,7 @@ for k in range(1, args.num_iterations + 1):
 
     print("*************Iteration " + str(k) + ", processing reference: " + ref)
 
-    map(os.remove, glob.glob("residualDir/" + prefix + '_*_nl_tr.nii.gz'))
+    map(os.remove, glob.glob("residualDir/" + prefix + '_*_nl_tr.nrrd'))
     map(os.remove, glob.glob("residualDir/" + prefix + '_*_flag'))
 
     numJobs = args.num_images - firstImage + 1
