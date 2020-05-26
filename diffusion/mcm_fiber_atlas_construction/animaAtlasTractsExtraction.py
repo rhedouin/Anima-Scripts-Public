@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# Warning: works only on unix-like systems, not windows where "python animaMultiCompartmentModelEstimation.py ..." has to be run
 
 import sys
 import argparse
@@ -36,6 +35,13 @@ parser.add_argument('-m', '--mcm-folder', type=str, required=True, help='MCM ima
 parser.add_argument('-t', '--tracts-folder', type=str, required=True, help='Tract filter masks folder')
 
 args = parser.parse_args()
+
+# The goal here is to create, from an atlas and attached data coming from the atlasing script and MCM fiber preparation,
+# the atlas of fibers itself. What is done here is:
+# - Apply transforms to MCM, tracts masks
+# - perform majority voting on each tract mask
+# - Computes full brain tractography
+# - Filters it to get atlas fiber tracts
 
 animaComputeDTIScalarMaps = os.path.join(animaDir, "animaComputeDTIScalarMaps")
 animaThrImage = os.path.join(animaDir, "animaThrImage")
