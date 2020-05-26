@@ -118,6 +118,8 @@ for dataNum in range(1, args.num_subjects + 1):
     shutil.copy(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + ".bval"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed.bval"))
     shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_preprocessed.nrrd"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed.nrrd"))
     shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_brainMask.nrrd"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed_brainMask.nrrd"))
+    os.remove(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_Tensors_B0.nrrd"))
+    os.remove(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_Tensors_NoiseVariance.nrrd"))
 
     # Now estimate MCMs
     os.chdir("Preprocessed_DWI")
