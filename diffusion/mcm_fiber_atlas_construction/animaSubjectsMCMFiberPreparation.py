@@ -33,6 +33,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-n', '--num-subjects', type=int, required=True,
                     help="Number of subjects used for computing the atlas")
+parser.add_argument('-s', '--start-subject', type=int, default=1, help="Subject to start with")
 
 parser.add_argument('-i', '--dw-images-prefix', type=str, required=True, help='DW images prefix (folder + basename)')
 parser.add_argument('-d', '--dw-dicom-folders-prefix', type=str, default="", help='Dicom folders prefixes (will append '
@@ -94,7 +95,7 @@ dwiPrefix = os.path.basename(args.dw_images_prefix)
 t1PrefixBase = os.path.dirname(args.t1_images_prefix)
 t1Prefix = os.path.basename(args.t1_images_prefix)
 
-for dataNum in range(1, args.num_subjects + 1):
+for dataNum in range(args.start_subject, args.num_subjects + 1):
     # Preprocess diffusion data
     preprocCommand = ["python3", os.path.join(animaScriptsDir,"diffusion","animaDiffusionImagePreprocessing.py"), "-b", os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + ".bval"),
                       "-t", os.path.join(t1PrefixBase, t1Prefix + "_" + str(dataNum) + ".nii.gz"),
