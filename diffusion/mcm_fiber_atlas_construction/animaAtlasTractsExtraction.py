@@ -83,7 +83,7 @@ for dataNum in range(1, args.num_subjects + 1):
     call(trsfGeneratorCommand)
 
     applyCommand = [animaMCMApplyTransformSerie,
-                    "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_" + str(dataNum) + "_preprocessed_MCM_avg.mcm"),
+                    "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_" + str(dataNum) + ".mcm"),
                     "-o", os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm"),
                     "-t", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml"),
                     "-g", args.dti_atlas_image]
