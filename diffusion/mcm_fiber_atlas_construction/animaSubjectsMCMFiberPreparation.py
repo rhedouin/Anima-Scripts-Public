@@ -67,12 +67,6 @@ animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 animaImageArithmetic = os.path.join(animaDir, "animaImageArithmetic")
 animaThrImage = os.path.join(animaDir, "animaThrImage")
 
-animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSerie")
-animaMCMAverageImages = os.path.join(animaDir, "animaMCMApplyTransformSerie")
-animaMCMTractography = os.path.join(animaDir, "animaMCMTractography")
-animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
-animaFibersFilterer = os.path.join(animaDir, "animaFibersFilterer")
-
 os.makedirs('Tensors', exist_ok=True)
 os.makedirs('Preprocessed_DWI', exist_ok=True)
 os.makedirs('MCM', exist_ok=True)
@@ -131,8 +125,8 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
 
     # Now move results to MCM folder
     os.chdir("..")
-    shutil.move(os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed_MCM_avg.mcm"), "MCM")
-    shutil.move(os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed_MCM_avg"), "MCM")
+    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed_MCM_avg.mcm"), os.path.join("MCM", "MCM_avg_" + str(dataNum) + ".mcm"))
+    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed_MCM_avg"), os.path.join("MCM", "MCM_avg_" + str(dataNum)))
     for f in glob.glob(os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed_MCM*")):
         if os.path.isdir(f):
             shutil.rmtree(f, ignore_errors=True)

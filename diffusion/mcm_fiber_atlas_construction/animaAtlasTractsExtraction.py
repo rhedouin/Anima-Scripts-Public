@@ -29,10 +29,9 @@ parser.add_argument('-n', '--num-subjects', type=int, required=True,
                     help="Number of subjects used for computing the atlas")
 
 parser.add_argument('-a', '--dti-atlas-image', type=str, required=True, help='DTI atlas image')
-parser.add_argument('-i', '--images-prefix', type=str, required=True, help='Atlas images prefix')
-parser.add_argument('-f', '--images-folder', type=str, required=True, help='Atlas images folder')
-parser.add_argument('-m', '--mcm-folder', type=str, required=True, help='MCM images folder')
-parser.add_argument('-t', '--tracts-folder', type=str, required=True, help='Tract filter masks folder')
+parser.add_argument('-i', '--tensor-images-prefix', type=str, required=True, help='Tensor images prefix')
+parser.add_argument('-m', '--mcm-images-prefix', type=str, required=True, help='MCM images prefix')
+parser.add_argument('-t', '--tracts-folder', type=str, default='Tracts_Masks', help='Tract filter masks folder')
 
 args = parser.parse_args()
 
@@ -54,9 +53,9 @@ animaImageArithmetic = os.path.join(animaDir, "animaImageArithmetic")
 animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
 animaFibersFilterer = os.path.join(animaDir, "animaFibersFilterer")
 
-os.makedirs('Transformed_MCM')
-os.makedirs('Transformed_Tracts_Masks')
-os.makedirs('Atlas_Tracts')
+os.makedirs('Transformed_MCM', exist_ok=True)
+os.makedirs('Transformed_Tracts_Masks', exist_ok=True)
+os.makedirs('Atlas_Tracts', exist_ok=True)
 
 # Tracts list imported from tractseg (
 tracksLists = ['AF_left', 'AF_right', 'ATR_left', 'ATR_right', 'CA', 'CC_1', 'CC_2', 'CC_3', 'CC_4', 'CC_5', 'CC_6',
@@ -70,48 +69,31 @@ tracksLists = ['AF_left', 'AF_right', 'ATR_left', 'ATR_right', 'CA', 'CC_1', 'CC
                'ST_PREM_right', 'ST_PREC_left', 'ST_PREC_right', 'ST_POSTC_left', 'ST_POSTC_right', 'ST_PAR_left',
                'ST_PAR_right', 'ST_OCC_left', 'ST_OCC_right']
 
+tensorsPrefixBase = os.path.dirname(args.tensor_images_prefix)
+tensorsPrefix = os.path.basename(args.tensor_images_prefix)
+mcmPrefixBase = os.path.dirname(args.mcm_images_prefix)
+mcmPrefix = os.path.basename(args.mcm_images_prefix)
 mcmListFile = open(os.path.join('Transformed_MCM', 'listMCM.txt'),"w")
 
 for dataNum in range(1, args.num_subjects + 1):
     # Apply transformations to additional MCM, assumes all transforms are in residualDir
-    trsfGeneratorCommand = [animaTransformSerieXmlGenerator,
-                            "-i", os.path.join("residualDir", args.images_prefix + "_" + str(dataNum) + "_linear_tr.txt"),
-                            "-i", os.path.join("residualDir", args.images_prefix + "_" + str(dataNum) + "_nonlinear_tr.nrrd"),
-                            "-i", os.path.join("residualDir", "sumNonlinear_inv_tr.nrrd"),
-                            "-o", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml")]
+    trsfGeneratorCommand = [animaTransformSerieXmlGenerator, "-i", os.path.join("residualDir", tensorsPrefix + "_" + str(dataNum) + "_linear_tr.txt"),
+                            "-i", os.path.join("residualDir", tensorsPrefix + "_" + str(dataNum) + "_nonlinear_tr.nrrd"),
+                            "-i", os.path.join("residualDir", "sumNonlinear_inv_tr.nrrd"), "-o", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml")]
     call(trsfGeneratorCommand)
 
     applyCommand = [animaMCMApplyTransformSerie,
-                    "-i", os.path.join(args.mcm_folder, args.images_prefix + "_" + str(dataNum) + ".mcm"),
-                    "-o", os.path.join('Transformed_MCM', args.images_prefix + "_" + str(dataNum) + ".mcm"),
+                    "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_" + str(dataNum) + "_preprocessed_MCM_avg.mcm"),
+                    "-o", os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm"),
                     "-t", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml"),
                     "-g", args.dti_atlas_image]
     call(applyCommand)
 
-    mcmListFile.write(os.path.join('Transformed_MCM', args.images_prefix + "_" + str(dataNum) + ".mcm") + "\n")
+    mcmListFile.write(os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm") + "\n")
 
-    # Now apply the transform to all tractseg begin and end regions
+    # Now apply the transform to all tractseg regions
     for track in tracksLists:
-        # Fuse begin and end regions, end = 2, begin = 1
-        mergeCommand = [animaImageArithmetic,
-                        "-i", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + "_e.nii.gz"),
-                        "-a", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + "_b.nii.gz"),
-                        "-M", 2, "-o", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + ".nrrd")]
-        call(mergeCommand)
-
-        # And remove overlapping regions -> put back to 2
-        thrCommand = [animaThrImage, "-t", "2.5",
-                      "-i", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + ".nrrd"),
-                      "-o", os.path.join(args.tracts_folder, "tmp.nrrd")]
-        call(thrCommand)
-
-        mergeCommand = [animaImageArithmetic,
-                        "-i", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + ".nrrd"),
-                        "-s", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + "_b.nii.gz"),
-                        "-o", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + ".nrrd")]
-        call(mergeCommand)
-
-        # Apply transform to fused mask
+        # Apply transform to fused begin and end mask
         applyCommand = [animaApplyTransformSerie,
                         "-i", os.path.join(args.tracts_folder, track + "_" + str(dataNum) + ".nrrd"),
                         "-o", os.path.join('Transformed_Tracts_Masks', track + "_" + str(dataNum) + ".nrrd"),
@@ -123,7 +105,7 @@ for dataNum in range(1, args.num_subjects + 1):
 mcmListFile.close()
 
 mergeMCMCommand = [animaMCMAverageImages, "-i", os.path.join('Transformed_MCM', 'listMCM.txt'), "-n", "3",
-                   "-o", "averageMCM_N3.mcm"]
+                   "-o", "averageMCM.mcm"]
 call(mergeMCMCommand)
 
 # Perform tractography on average MCM model
@@ -135,12 +117,12 @@ thrCommand = [animaThrImage, "-t", "0", "-i", "averageADC.nrrd", "-o",
 call(thrCommand)
 
 trackingCommand = [animaMCMTractography, "-i", "averageMCM_N3.mcm", "-s", "averageMask.nrrd",
-                   "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds'), "-I", "0.5"]
+                   "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds')]
 call(trackingCommand)
 
 # Majority vote for tracts masks and filter main tractography
 for track in tracksLists:
-    trackMasksListFile = open(os.path.join('Transformed_Tracts_Masks', 'listMasks.txt'),"w")
+    trackMasksListFile = open(os.path.join('Transformed_Tracts_Masks', 'listMasks.txt'), "w")
     for dataNum in range(1, args.num_subjects + 1):
         trackMasksListFile.write(os.path.join('Transformed_Tracts_Masks', track + "_" + str(dataNum) + ".nrrd") + "\n")
 
