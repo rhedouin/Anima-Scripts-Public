@@ -47,7 +47,7 @@ animaThrImage = os.path.join(animaDir, "animaThrImage")
 animaTransformSerieXmlGenerator = os.path.join(animaDir, "animaTransformSerieXmlGenerator")
 animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSerie")
-animaMCMAverageImages = os.path.join(animaDir, "animaMCMApplyTransformSerie")
+animaMCMAverageImages = os.path.join(animaDir, "animaMCMAverageImages")
 animaMCMTractography = os.path.join(animaDir, "animaMCMTractography")
 animaImageArithmetic = os.path.join(animaDir, "animaImageArithmetic")
 animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
@@ -85,10 +85,10 @@ for dataNum in range(1, args.num_subjects + 1):
     call(trsfGeneratorCommand)
 
     mcmApplyCommand = [animaMCMApplyTransformSerie,
-                    "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_" + str(dataNum) + ".mcm"),
-                    "-o", os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm"),
-                    "-t", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml"),
-                    "-g", args.dti_atlas_image, "-n", "3"]
+                       "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_" + str(dataNum) + ".mcm"),
+                       "-o", os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm"),
+                       "-t", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml"),
+                       "-g", args.dti_atlas_image, "-n", "3"]
     call(mcmApplyCommand)
 
     mcmListFile.write(os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm") + "\n")
