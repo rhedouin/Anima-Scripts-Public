@@ -52,10 +52,12 @@ animaMCMTractography = os.path.join(animaDir, "animaMCMTractography")
 animaImageArithmetic = os.path.join(animaDir, "animaImageArithmetic")
 animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
 animaFibersFilterer = os.path.join(animaDir, "animaFibersFilterer")
+animaTracksMCMPropertiesExtraction = os.path.join(animaDir, "animaTracksMCMPropertiesExtraction")
 
 os.makedirs('Transformed_MCM', exist_ok=True)
 os.makedirs('Transformed_Tracts_Masks', exist_ok=True)
 os.makedirs('Atlas_Tracts', exist_ok=True)
+os.makedirs('Augmented_Atlas_Tracts', exist_ok=True)
 
 # Tracts list imported from tractseg (
 tracksLists = ['AF_left', 'AF_right', 'ATR_left', 'ATR_right', 'CA', 'CC_1', 'CC_2', 'CC_3', 'CC_4', 'CC_5', 'CC_6',
@@ -116,7 +118,7 @@ thrCommand = [animaThrImage, "-t", "0", "-i", "averageADC.nrrd", "-o",
               "averageMask.nrrd"]
 call(thrCommand)
 
-trackingCommand = [animaMCMTractography, "-i", "averageMCM_N3.mcm", "-s", "averageMask.nrrd",
+trackingCommand = [animaMCMTractography, "-i", "averageMCM.mcm", "-s", "averageMask.nrrd",
                    "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds')]
 call(trackingCommand)
 
@@ -137,3 +139,14 @@ for track in tracksLists:
                           "-r", os.path.join('Transformed_Tracts_Masks', track + '_FilterMask.nrrd'),
                           "-t", "1", "-t", "2"]
     call(fiberFilterCommand)
+
+    trackListFile = open(os.path.join('Augmented_Atlas_Tracts', 'listData_' + track + '.txt'), "w")
+    for dataNum in range(1, args.num_subjects + 1):
+        propsExtractionCommand = [animaTracksMCMPropertiesExtraction, "-i", os.path.join('Atlas_Tracts', track + '.fds'),
+                                  "-m", os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm"),
+                                  "-o", os.path.join('Augmented_Atlas_Tracts', track + 'MCM_augmented_' + str(dataNum) + '.fds')]
+        call(propsExtractionCommand)
+
+        trackListFile.write(os.path.join('Augmented_Atlas_Tracts', track + 'MCM_augmented_' + str(dataNum) + '.fds') + "\n")
+
+    trackListFile.close()
