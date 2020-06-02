@@ -84,12 +84,12 @@ for dataNum in range(1, args.num_subjects + 1):
                             "-i", os.path.join("residualDir", "sumNonlinear_inv_tr.nrrd"), "-o", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml")]
     call(trsfGeneratorCommand)
 
-    applyCommand = [animaMCMApplyTransformSerie,
+    mcmApplyCommand = [animaMCMApplyTransformSerie,
                     "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_" + str(dataNum) + ".mcm"),
                     "-o", os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm"),
                     "-t", os.path.join("residualDir", "trsf_" + str(dataNum) + ".xml"),
-                    "-g", args.dti_atlas_image]
-    call(applyCommand)
+                    "-g", args.dti_atlas_image, "-n", "3"]
+    call(mcmApplyCommand)
 
     mcmListFile.write(os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm") + "\n")
 
