@@ -59,7 +59,7 @@ os.makedirs('Transformed_Tracts_Masks', exist_ok=True)
 os.makedirs('Atlas_Tracts', exist_ok=True)
 os.makedirs('Augmented_Atlas_Tracts', exist_ok=True)
 
-# Tracts list imported from tractseg (
+# Tracts list imported from tractseg
 tracksLists = ['AF_left', 'AF_right', 'ATR_left', 'ATR_right', 'CA', 'CC_1', 'CC_2', 'CC_3', 'CC_4', 'CC_5', 'CC_6',
                'CC_7', 'CG_left', 'CG_right', 'CST_left', 'CST_right', 'MLF_left', 'MLF_right', 'FPT_left', 'FPT_right',
                'FX_left', 'FX_right', 'ICP_left', 'ICP_right', 'IFO_left', 'IFO_right', 'ILF_left', 'ILF_right', 'MCP',
