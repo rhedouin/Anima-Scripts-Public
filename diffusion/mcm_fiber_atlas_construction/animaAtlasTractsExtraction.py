@@ -147,6 +147,6 @@ for track in tracksLists:
                                   "-o", os.path.join('Augmented_Atlas_Tracts', track + 'MCM_augmented_' + str(dataNum) + '.fds')]
         call(propsExtractionCommand)
 
-        trackListFile.write(os.path.join('Augmented_Atlas_Tracts', track + 'MCM_augmented_' + str(dataNum) + '.fds') + "\n")
+        trackListFile.write(os.path.join('Augmented_Atlas_Tracts', track + '_MCM_augmented_' + str(dataNum) + '.fds') + "\n")
 
     trackListFile.close()
