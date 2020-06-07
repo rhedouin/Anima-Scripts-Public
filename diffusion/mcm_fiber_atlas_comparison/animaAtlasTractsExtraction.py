@@ -144,7 +144,7 @@ for track in tracksLists:
     for dataNum in range(1, args.num_subjects + 1):
         propsExtractionCommand = [animaTracksMCMPropertiesExtraction, "-i", os.path.join('Atlas_Tracts', track + '.fds'),
                                   "-m", os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm"),
-                                  "-o", os.path.join('Augmented_Atlas_Tracts', track + 'MCM_augmented_' + str(dataNum) + '.fds')]
+                                  "-o", os.path.join('Augmented_Atlas_Tracts', track + '_MCM_augmented_' + str(dataNum) + '.fds')]
         call(propsExtractionCommand)
 
         trackListFile.write(os.path.join('Augmented_Atlas_Tracts', track + '_MCM_augmented_' + str(dataNum) + '.fds') + "\n")
