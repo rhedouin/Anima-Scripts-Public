@@ -109,25 +109,27 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
 
     # Move preprocessed results to output folders
     shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_Tensors.nrrd"), os.path.join("Tensors", "DTI_" + str(dataNum) + ".nrrd"))
-    shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_preprocessed.bvec"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed.bvec"))
-    shutil.copy(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + ".bval"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed.bval"))
-    shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_preprocessed.nrrd"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed.nrrd"))
-    shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_brainMask.nrrd"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed_brainMask.nrrd"))
+    shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_preprocessed.bvec"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + ".bvec"))
+    shutil.copy(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + ".bval"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + ".bval"))
+    shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_preprocessed.nrrd"), os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + ".nrrd"))
+    shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_brainMask.nrrd"), os.path.join("Preprocessed_DWI", "DWI_BrainMask_" + str(dataNum) + ".nrrd"))
     os.remove(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_Tensors_B0.nrrd"))
     os.remove(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_Tensors_NoiseVariance.nrrd"))
 
     # Now estimate MCMs
     os.chdir("Preprocessed_DWI")
-    mcmCommand = ["python3", os.path.join(animaScriptsDir,"diffusion","animaMultiCompartmentModelEstimation.py"), "-i", "DWI_" + str(dataNum) + "_preprocessed.nrrd",
-                  "-g", "DWI_" + str(dataNum) + "_preprocessed.bvec", "-b", "DWI_" + str(dataNum) + "_preprocessed.bval", "-n", "3", "-m", "DWI_" + str(dataNum) + "_preprocessed_brainMask.nrrd",
+    mcmCommand = ["python3", os.path.join(animaScriptsDir,"diffusion","animaMultiCompartmentModelEstimation.py"), "-i", "DWI_" + str(dataNum) + ".nrrd",
+                  "-g", "DWI_" + str(dataNum) + ".bvec", "-b", "DWI_" + str(dataNum) + ".bval", "-n", "3", "-m", "DWI_BrainMask_" + str(dataNum) + ".nrrd",
                   "-t", args.type]
     call(mcmCommand)
 
     # Now move results to MCM folder
     os.chdir("..")
-    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed_MCM_avg.mcm"), os.path.join("MCM", "MCM_avg_" + str(dataNum) + ".mcm"))
-    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed_MCM_avg"), os.path.join("MCM", "MCM_avg_" + str(dataNum)))
-    for f in glob.glob(os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed_MCM*")):
+    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_avg.mcm"), os.path.join("MCM", "MCM_avg_" + str(dataNum) + ".mcm"))
+    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_avg"), os.path.join("MCM", "MCM_avg_" + str(dataNum)))
+    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_B0_avg.nrrd"), os.path.join("MCM", "MCM_avg_B0_" + str(dataNum) + ".nrrd"))
+    shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_S2_avg.nrrd"), os.path.join("MCM", "MCM_avg_S2_" + str(dataNum) + ".nrrd"))
+    for f in glob.glob(os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_MCM*")):
         if os.path.isdir(f):
             shutil.rmtree(f, ignore_errors=True)
         else:
@@ -145,18 +147,18 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
     trsfSerieGenCommand = [animaTransformSerieXmlGenerator, "-i", os.path.join(tmpFolder,"Subject_FA_OnMNI_tr.txt"), "-o", os.path.join(tmpFolder,"Subject_FA_OnMNI_tr.xml")]
     call(trsfSerieGenCommand)
 
-    applyTrsfCommand = [animaApplyTransformSerie, "-i", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed.nrrd"), "-t", os.path.join(tmpFolder,"Subject_FA_OnMNI_tr.xml"),
-                        "-g", args.tractseg_fa_template, "-o", os.path.join(tmpFolder, "DWI_MNI.nii.gz"), "--grad", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed.bvec"),
+    applyTrsfCommand = [animaApplyTransformSerie, "-i", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + ".nrrd"), "-t", os.path.join(tmpFolder,"Subject_FA_OnMNI_tr.xml"),
+                        "-g", args.tractseg_fa_template, "-o", os.path.join(tmpFolder, "DWI_MNI.nii.gz"), "--grad", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + ".bvec"),
                         "-O", os.path.join(tmpFolder, "DWI_MNI.bvec")]
     call(applyTrsfCommand)
 
-    shutil.copy(os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed.bval"), os.path.join(tmpFolder, "DWI_MNI.bval"))
+    shutil.copy(os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + ".bval"), os.path.join(tmpFolder, "DWI_MNI.bval"))
     # Trick to get back temporary file to mrtrix ok format (switch y axis)
     tmpData = np.loadtxt(os.path.join(tmpFolder, "DWI_MNI.bvec"))
     tmpData[1] *= -1
     np.savetxt(os.path.join(tmpFolder, "DWI_MNI.bvec"), tmpData)
 
-    applyTrsfCommand = [animaApplyTransformSerie, "-i", os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_preprocessed_brainMask.nrrd"),
+    applyTrsfCommand = [animaApplyTransformSerie, "-i", os.path.join("Preprocessed_DWI", "DWI_BrainMask_" + str(dataNum) + ".nrrd"),
                         "-t", os.path.join(tmpFolder, "Subject_FA_OnMNI_tr.xml"), "-g", args.tractseg_fa_template,
                         "-o", os.path.join(tmpFolder, "DWI_MNI_brainMask.nii.gz"), "-n", "nearest"]
     call(applyTrsfCommand)
@@ -182,7 +184,7 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
 
         # Now move back to native space
         applyTrsfCommand = [animaApplyTransformSerie, "-i", os.path.join(tmpFolder, "endings_segmentations", track + ".nrrd"), "-t",
-                            os.path.join(tmpFolder, "Subject_FA_OnMNI_tr.xml"), "-g", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + "_preprocessed.nrrd"),
+                            os.path.join(tmpFolder, "Subject_FA_OnMNI_tr.xml"), "-g", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + ".nrrd"),
                             "-o", os.path.join("Tracts_Masks", track + "_" + str(dataNum) + ".nrrd"), "-I", "-n", "nearest"]
         call(applyTrsfCommand)
 
