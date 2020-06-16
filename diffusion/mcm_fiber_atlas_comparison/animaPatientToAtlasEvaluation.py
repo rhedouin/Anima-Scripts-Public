@@ -10,6 +10,7 @@ else:
 
 import tempfile
 import os
+import glob
 from subprocess import call
 import shutil
 
@@ -100,25 +101,27 @@ call(preprocCommand)
 
 # Move preprocessed results to output folders
 shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_Tensors.nrrd"), os.path.join("Patients_Tensors", dwiPrefix + "_Tensors.nrrd"))
-shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_preprocessed.bvec"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_preprocessed.bvec"))
-shutil.copy(os.path.join(dwiPrefixBase, dwiPrefix + ".bval"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_preprocessed.bval"))
-shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_preprocessed.nrrd"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_preprocessed.nrrd"))
-shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_brainMask.nrrd"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_preprocessed_brainMask.nrrd"))
+shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_preprocessed.bvec"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + ".bvec"))
+shutil.copy(os.path.join(dwiPrefixBase, dwiPrefix + ".bval"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + ".bval"))
+shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_preprocessed.nrrd"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + ".nrrd"))
+shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_brainMask.nrrd"), os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_BrainMask.nrrd"))
 os.remove(os.path.join(dwiPrefixBase, dwiPrefix + "_Tensors_B0.nrrd"))
 os.remove(os.path.join(dwiPrefixBase, dwiPrefix + "_Tensors_NoiseVariance.nrrd"))
 
 # Now estimate MCMs
 os.chdir("Preprocessed_Patients_DWI")
-mcmCommand = ["python3", os.path.join(animaScriptsDir, "diffusion", "animaMultiCompartmentModelEstimation.py"), "-i", dwiPrefix + "_preprocessed.nrrd",
-              "-g", dwiPrefix + "_preprocessed.bvec", "-b", dwiPrefix + "_preprocessed.bval", "-n", "3", "-m", dwiPrefix + "_preprocessed_brainMask.nrrd",
+mcmCommand = ["python3", os.path.join(animaScriptsDir, "diffusion", "animaMultiCompartmentModelEstimation.py"), "-i", dwiPrefix + ".nrrd",
+              "-g", dwiPrefix + ".bvec", "-b", dwiPrefix + ".bval", "-n", "3", "-m", dwiPrefix + "_BrainMask.nrrd",
               "-t", args.type]
 call(mcmCommand)
 
 # Now move results to MCM folder
 os.chdir("..")
-shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_preprocessed_MCM_avg.mcm"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg.mcm"))
-shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_preprocessed_MCM_avg"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg"))
-for f in glob.glob(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_preprocessed_MCM*")):
+shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_avg.mcm"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg.mcm"))
+shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_avg"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg"))
+shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_B0_avg.nrrd"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg_B0.nrrd"))
+shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_S2_avg.nrrd"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg_S2.nrrd"))
+for f in glob.glob(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM*")):
     if os.path.isdir(f):
         shutil.rmtree(f, ignore_errors=True)
     else:
@@ -173,6 +176,16 @@ mcmApplyCommand = [animaMCMApplyTransformSerie, "-i", os.path.join("Patients_MCM
                    "-o", os.path.join('Transformed_Patients_MCM', dwiPrefix + "_MCM_avg_onAtlas.mcm"),
                    "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-g", args.dti_atlas_image, "-n", "3"]
 call(mcmApplyCommand)
+
+mcmB0ApplyCommand = [animaApplyTransformSerie, "-i", os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg_B0.nrrd"),
+                     "-o", os.path.join('Transformed_Patients_MCM', dwiPrefix + "_MCM_avg_B0_onAtlas.nrrd"),
+                     "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-g", args.dti_atlas_image]
+call(mcmB0ApplyCommand)
+
+mcmS2ApplyCommand = [animaApplyTransformSerie, "-i", os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg_S2.nrrd"),
+                     "-o", os.path.join('Transformed_Patients_MCM', dwiPrefix + "_MCM_avg_S2_onAtlas.nrrd"),
+                     "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-g", args.dti_atlas_image]
+call(mcmS2ApplyCommand)
 
 # Process tracks: augmenting with patient and perform comparison
 for track in tracksLists:
