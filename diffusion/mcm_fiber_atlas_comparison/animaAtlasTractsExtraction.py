@@ -9,7 +9,9 @@ else:
     import ConfigParser as ConfParser
 
 import os
+import tempfile
 from subprocess import call
+import shutil
 
 configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
 if not os.path.exists(configFilePath):
@@ -51,6 +53,7 @@ animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSeri
 animaMCMAverageImages = os.path.join(animaDir, "animaMCMAverageImages")
 animaAverageImages = os.path.join(animaDir, "animaAverageImages")
 animaMCMTractography = os.path.join(animaDir, "animaMCMTractography")
+animaMorphologicalOperations = os.path.join(animaDir, "animaMorphologicalOperations")
 animaMCMProbabilisticTractography = os.path.join(animaDir, "animaMCMProbabilisticTractography")
 animaImageArithmetic = os.path.join(animaDir, "animaImageArithmetic")
 animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
@@ -166,7 +169,14 @@ trackingCommand = [animaMCMTractography, "-i", "averageMCM.mcm", "-s", "averageM
                    "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds')]
 call(trackingCommand)
 
-probaTrackingCommand = [animaMCMProbabilisticTractography, "-i", "averageMCM.mcm", "-s", "averageMask.nrrd", "-b", "averageMCM_B0.nrrd", "-N", "averageMCM_S2.nrrd",
+tmpFolder = tempfile.gettempdir()
+erodeMaskCommand = [animaMorphologicalOperations, "-R", "-r", "5", "-i", "averageMask.nrrd", "-o", os.path.join(tmpFolder, "averageMask_er.nrrd"), "-a", "er"]
+call(erodeMaskCommand)
+
+diffMasksCommand = [animaImageArithmetic, "-i", "averageMask.nrrd", "-s", os.path.join(tmpFolder, "averageMask_er.nrrd"), "-o", "averageSeeds_Proba.nrrd"]
+call(diffMasksCommand)
+
+probaTrackingCommand = [animaMCMProbabilisticTractography, "-i", "averageMCM.mcm", "-s", "averageSeeds_Proba.nrrd", "-b", "averageMCM_B0.nrrd", "-N", "averageMCM_S2.nrrd",
                         "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography_Proba.fds'), "-M"]
 call(probaTrackingCommand)
 
@@ -198,3 +208,5 @@ for track in tracksLists:
         trackListFile.write(os.path.join('Augmented_Atlas_Tracts', track + '_MCM_augmented_' + str(dataNum) + '.fds') + "\n")
 
     trackListFile.close()
+
+shutil.rmtree(tmpFolder)
