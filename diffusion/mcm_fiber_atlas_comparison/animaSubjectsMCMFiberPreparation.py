@@ -101,9 +101,8 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
     if args.dw_dicom_folders_prefix == "":
         preprocCommand = preprocCommand + ["-g", os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + ".bvec")]
     else:
-        dicomPrefixBase = os.path.dirname(args.dw_dicom_folders_prefix)
-        dicomPrefix = os.path.basename(args.dw_dicom_folders_prefix)
-        preprocCommand = preprocCommand + ["-D", os.path.join(dicomPrefixBase, dicomPrefix + "_" + str(dataNum), "*")]
+        dicomGlobFiles = glob.glob(os.path.join(args.dw_dicom_folders_prefix + "_" + str(dataNum), "*"))
+        preprocCommand = preprocCommand + ["-D"] + dicomGlobFiles
 
     call(preprocCommand)
 
