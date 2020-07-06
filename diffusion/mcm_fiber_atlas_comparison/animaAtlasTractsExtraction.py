@@ -53,9 +53,6 @@ animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSeri
 animaMCMAverageImages = os.path.join(animaDir, "animaMCMAverageImages")
 animaAverageImages = os.path.join(animaDir, "animaAverageImages")
 animaMCMTractography = os.path.join(animaDir, "animaMCMTractography")
-animaMorphologicalOperations = os.path.join(animaDir, "animaMorphologicalOperations")
-animaMCMProbabilisticTractography = os.path.join(animaDir, "animaMCMProbabilisticTractography")
-animaImageArithmetic = os.path.join(animaDir, "animaImageArithmetic")
 animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
 animaFibersFilterer = os.path.join(animaDir, "animaFibersFilterer")
 animaTracksMCMPropertiesExtraction = os.path.join(animaDir, "animaTracksMCMPropertiesExtraction")
@@ -148,7 +145,7 @@ mcmS2ListFile.close()
 maskListFile.close()
 
 mergeMCMCommand = [animaMCMAverageImages, "-i", os.path.join('Transformed_MCM', 'listMCM.txt'), "-n", "3",
-                   "-o", "averageMCM.mcm"]
+                   "-m", os.path.join('Transformed_MCM', 'listMasks.txt'), "-o", "averageMCM.mcm"]
 call(mergeMCMCommand)
 
 mergeMCMB0Command = [animaAverageImages, "-i", os.path.join('Transformed_MCM', 'listMCM_B0.txt'), "-m", os.path.join('Transformed_MCM', 'listMasks.txt'), "-o", "averageMCM_B0.nrrd"]
@@ -168,17 +165,6 @@ call(thrCommand)
 trackingCommand = [animaMCMTractography, "-i", "averageMCM.mcm", "-s", "averageMask.nrrd",
                    "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds')]
 call(trackingCommand)
-
-tmpFolder = tempfile.gettempdir()
-erodeMaskCommand = [animaMorphologicalOperations, "-R", "-r", "5", "-i", "averageMask.nrrd", "-o", os.path.join(tmpFolder, "averageMask_er.nrrd"), "-a", "er"]
-call(erodeMaskCommand)
-
-diffMasksCommand = [animaImageArithmetic, "-i", "averageMask.nrrd", "-s", os.path.join(tmpFolder, "averageMask_er.nrrd"), "-o", "averageSeeds_Proba.nrrd"]
-call(diffMasksCommand)
-
-probaTrackingCommand = [animaMCMProbabilisticTractography, "-i", "averageMCM.mcm", "-s", "averageSeeds_Proba.nrrd", "-b", "averageMCM_B0.nrrd", "-N", "averageMCM_S2.nrrd",
-                        "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography_Proba.fds'), "-M"]
-call(probaTrackingCommand)
 
 # Majority vote for tracts masks and filter main tractography
 for track in tracksLists:
