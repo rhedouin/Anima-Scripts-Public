@@ -13,6 +13,7 @@ import glob
 import os
 import shutil
 import numpy as np
+import nibabel as nib
 from subprocess import call
 
 configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
@@ -43,6 +44,8 @@ parser.add_argument('--type', type=str, default="tensor", help="Type of compartm
 
 parser.add_argument('--tractseg-fa-template', type=str, required=True, help="FA template in MNI space from TractSeg. Usually located in the tractseg package well hidden")
 parser.add_argument('--dw-without-reversed-b0', action='store_true', help="No reversed B0 provided with the DWIs")
+
+parser.add_argument('-b', '--bvalue-extract', type=int, default=0, help="Extract only a specific b-value for TractSeg (recommended for CUSP")
 
 args = parser.parse_args()
 
@@ -162,9 +165,35 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
                         "-o", os.path.join(tmpFolder, "DWI_MNI_brainMask.nii.gz"), "-n", "nearest"]
     call(applyTrsfCommand)
 
+    # If asked for, extract specific b-value shell for compatibility between CUSP and TractSeg
+    bvalTS = os.path.join(tmpFolder, "DWI_MNI.bval")
+    bvecTS = os.path.join(tmpFolder, "DWI_MNI.bvec")
+    dwiTS = os.path.join(tmpFolder, "DWI_MNI.nii.gz")
+    if args.bvalue_extract > 0:
+        img = nib.load(dwiTS)
+        bvals = np.loadtxt(bvalTS)
+        bvecs = np.loadtxt(bvecTS)
+        div5ShellValue = int(args.bvalue_extract/5)
+        lowerShellValue = div5ShellValue * 5
+        upperShellValue = lowerShellValue
+        if not div5ShellValue == args.bvalue_extract/5:
+            upperShellValue = lowerShellValue + 5
+
+        indexesValues = np.where((bvals <= upperShellValue) * (bvals >= lowerShellValue) | (bvals == 0))[0]
+        bvals = bvals[indexesValues]
+        bvecs = bvecs[:, indexesValues]
+        data_crop = img.get_data()[:, :, :, indexesValues]
+        img_crop = nib.Nifti1Image(data_crop, img.affine, img.header)
+        np.savetxt(os.path.join(tmpFolder, "DWI_MNI_crop.bval"), bvals)
+        np.savetxt(os.path.join(tmpFolder, "DWI_MNI_crop.bvec"), bvecs)
+        nib.save(img_crop, os.path.join(tmpFolder, "DWI_MNI_crop.nii.gz"))
+
+        bvalTS = os.path.join(tmpFolder, "DWI_MNI_crop.bval")
+        bvecTS = os.path.join(tmpFolder, "DWI_MNI_crop.bvec")
+        dwiTS = os.path.join(tmpFolder, "DWI_MNI_crop.nii.gz")
+
     # Finally call tractseg on adapted data
-    tractsegCommand = ["TractSeg", "-i", os.path.join(tmpFolder, "DWI_MNI.nii.gz"), "-o", tmpFolder, "--bvals", os.path.join(tmpFolder, "DWI_MNI.bval"),
-                       "--bvecs", os.path.join(tmpFolder, "DWI_MNI.bvec"), "--raw_diffusion_input", "--brain_mask",  os.path.join(tmpFolder, "DWI_MNI_brainMask.nii.gz"),
+    tractsegCommand = ["TractSeg", "-i", dwiTS, "-o", tmpFolder, "--bvals", bvalTS, "--bvecs", bvecTS, "--raw_diffusion_input", "--brain_mask",  os.path.join(tmpFolder, "DWI_MNI_brainMask.nii.gz"),
                        "--output_type", "endings_segmentation"]
     call(tractsegCommand)
 
