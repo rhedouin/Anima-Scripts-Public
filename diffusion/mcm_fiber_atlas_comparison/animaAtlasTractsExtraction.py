@@ -195,4 +195,3 @@ for track in tracksLists:
 
     trackListFile.close()
 
-shutil.rmtree(tmpFolder)
