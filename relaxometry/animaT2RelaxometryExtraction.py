@@ -31,12 +31,11 @@ parser = argparse.ArgumentParser(
                 "multi-T2 and/or MWF) plus the B1 map.")
 parser.add_argument('-i', '--input', type=str, required=True, help='4D relaxometry image file to process')
 parser.add_argument('-t', '--T1', type=str, default="", help="Optional T1 map")
-parser.add_argument('-m', '--image-for-mask', type=str, default="", help="High quality image for computing brain mask")
+parser.add_argument('-m', '--image-for-mask', type=str, default="", help="High quality image for computing brain mask (if MP2RAGE, INV2 image is better)")
 parser.add_argument('-e', '--echo-spacing', type=float, required=True, help="Echo spacing of the CPMG sequence")
 parser.add_argument('-o', '--mono-out', type=str, default="", help="Mono T2 estimation output")
 parser.add_argument('-g', '--gmm-out', type=str, default="", help="Multi T2 weights estimation output")
-parser.add_argument('--no-brain-masking', action='store_true', help="Do not perform any brain masking, may be much "
-                                                                    "longer")
+parser.add_argument('--no-brain-masking', action='store_true', help="Do not perform any brain masking, may be much longer")
 
 args = parser.parse_args()
 if args.mono_out == "" and args.gmm_out == "":
