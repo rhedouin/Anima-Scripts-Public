@@ -33,6 +33,7 @@ parser.add_argument('-i', '--input', type=str, required=True, help='4D relaxomet
 parser.add_argument('-t', '--T1', type=str, default="", help="Optional T1 map")
 parser.add_argument('-m', '--image-for-mask', type=str, default="", help="High quality image for computing brain mask (if MP2RAGE, INV2 image is better)")
 parser.add_argument('-e', '--echo-spacing', type=float, required=True, help="Echo spacing of the CPMG sequence")
+parser.add_argument('--tr-value', type=float, default=5000, help="TR value of the acquisition (used for mono T2 initialization")
 parser.add_argument('-o', '--mono-out', type=str, default="", help="Mono T2 estimation output")
 parser.add_argument('-g', '--gmm-out', type=str, default="", help="Multi T2 weights estimation output")
 parser.add_argument('--no-brain-masking', action='store_true', help="Do not perform any brain masking, may be much longer")
@@ -111,7 +112,7 @@ if args.mono_out != "":
     if os.path.splitext(args.mono_out)[1] == '.gz':
         outPrefix = os.path.splitext(outPrefix)[0]
 
-    monoT2Command = [animaDir + "animaT2EPGRelaxometryEstimation", "-l", inputImage, "-o", args.mono_out,
+    monoT2Command = [animaDir + "animaT2EPGRelaxometryEstimation", "-l", inputImage, "-o", args.mono_out, "--tr", str(args.tr_value),
                      "-e", str(args.echo_spacing), "--out-b1", outPrefix + "_B1.nrrd", "-O", outPrefix + "_M0.nrrd"]
 
     if maskImage != "":
