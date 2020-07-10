@@ -52,7 +52,7 @@ animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSerie")
 animaMCMAverageImages = os.path.join(animaDir, "animaMCMAverageImages")
 animaAverageImages = os.path.join(animaDir, "animaAverageImages")
-animaMCMTractography = os.path.join(animaDir, "animaMCMTractography")
+animaDTITractography = os.path.join(animaDir, "animaDTITractography")
 animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
 animaFibersFilterer = os.path.join(animaDir, "animaFibersFilterer")
 animaTracksMCMPropertiesExtraction = os.path.join(animaDir, "animaTracksMCMPropertiesExtraction")
@@ -162,7 +162,7 @@ thrCommand = [animaThrImage, "-t", "0", "-i", "averageADC.nrrd", "-o",
               "averageMask.nrrd"]
 call(thrCommand)
 
-trackingCommand = [animaMCMTractography, "-i", "averageMCM.mcm", "-s", "averageMask.nrrd",
+trackingCommand = [animaDTITractography, "-i", args.dti_atlas_image, "-s", "averageMask.nrrd",
                    "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds')]
 call(trackingCommand)
 
