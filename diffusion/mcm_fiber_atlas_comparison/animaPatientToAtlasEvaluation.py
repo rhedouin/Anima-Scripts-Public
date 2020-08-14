@@ -33,7 +33,7 @@ parser.add_argument('-n', '--num-subjects', type=int, required=True,
 parser.add_argument('-i', '--dw-patient-image', type=str, required=True, help='DW patient image (folder + name)')
 parser.add_argument('-d', '--dw-dicom-folder', type=str, default="", help='Dicom folder for patient')
 parser.add_argument('-t', '--t1-image', type=str, required=True, help='T1 patient image (folder + name)')
-parser.add_argument('--dw-without-reversed-b0', action='store_true', help="No reversed B0 provided with the patient DWI")
+parser.add_argument('--dw-without-reversed-b0', action='store_true', help="No reversed B0 provided with the patient DWI, otherwise assume there is a file named by DWI prefix + reverse_b0.nii.gz")
 parser.add_argument('--type', type=str, default="tensor", help="Type of compartment model for fascicles (stick, zeppelin, tensor, noddi, ddi)")
 
 parser.add_argument('-a', '--dti-atlas-image', type=str, required=True, help='DTI atlas image')
@@ -95,7 +95,8 @@ if not args.dw_without_reversed_b0:
 if args.dw_dicom_folder == "":
     preprocCommand = preprocCommand + ["-g", os.path.join(dwiPrefixBase, dwiPrefix + ".bvec")]
 else:
-    preprocCommand = preprocCommand + ["-D", os.path.join(args.dw_dicom_folder, "*")]
+    dicomGlobFiles = glob.glob(os.path.join(args.dw_dicom_folder, "*"))
+    preprocCommand = preprocCommand + ["-D"] + dicomGlobFiles
 
 call(preprocCommand)
 
