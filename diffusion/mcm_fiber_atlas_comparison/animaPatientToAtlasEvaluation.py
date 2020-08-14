@@ -198,7 +198,7 @@ for track in tracksLists:
 
     # Compare to controls list of augmented tracts
     propsComparisonCommand = [animaPatientToGroupComparisonOnTracks, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds'),
-                              "l", os.path.join(args.tracts_folder, "listData_" + track + ".txt"),
+                              "-l", os.path.join(args.tracts_folder, "listData_" + track + ".txt"),
                               "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
                               "-O", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
     call(propsComparisonCommand)
