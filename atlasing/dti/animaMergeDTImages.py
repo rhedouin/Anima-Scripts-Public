@@ -81,27 +81,27 @@ for a in range(1,args.num_images + 1):
 
 myfile.close()
 
-command = [animaAverageImages, "-i", "sumNonlinear.txt","-o",os.path.join("tempDir","sumNonlinear_tr.nrrd")]
+command = [animaAverageImages, "-i", "sumNonlinear.txt","-o",os.path.join("residualDir","sumNonlinear_tr.nrrd")]
 if not args.weights == "":
     command += ["-w",args.weights]
 
 call(command)
 
-command = [animaImageArithmetic,"-i",os.path.join("tempDir","sumNonlinear_tr.nrrd"),"-M","-1",
-           "-o",os.path.join("tempDir", "sumNonlinear_inv_tr.nrrd")]
+command = [animaImageArithmetic,"-i",os.path.join("residualDir","sumNonlinear_tr.nrrd"),"-M","-1",
+           "-o",os.path.join("residualDir", "sumNonlinear_inv_tr.nrrd")]
 call(command)
 
 myfileImages = open("refIms.txt","w")
 myfileMasks = open("masksIms.txt","w")
 for a in range(1,args.num_images+1):
     if a == 1 and args.num_iter == 1:
-        command = [animaTransformSerieXmlGenerator,"-i",os.path.join("tempDir", "sumNonlinear_inv_tr.nrrd"),
+        command = [animaTransformSerieXmlGenerator,"-i",os.path.join("residualDir", "sumNonlinear_inv_tr.nrrd"),
                    "-o",os.path.join("tempDir", "trsf_" + str(a) + ".xml")]
         call(command)
     else:
         command = [animaTransformSerieXmlGenerator,"-i",os.path.join("tempDir", args.prefix + "_" + str(a) + "_linear_tr.txt"),
                    "-i", os.path.join("tempDir",args.prefix + "_" + str(a) + "_nonlinear_tr.nrrd"),
-                   "-i",os.path.join("tempDir","sumNonlinear_inv_tr.nrrd"),
+                   "-i",os.path.join("residualDir","sumNonlinear_inv_tr.nrrd"),
                    "-o",os.path.join("tempDir","trsf_" + str(a) + ".xml")]
         call(command)
 

@@ -94,6 +94,9 @@ else:
 if os.path.exists(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd")):
     os.remove(os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd"))
 
+os.symlink(os.path.join(os.getcwd(),"tempDir",args.prefix + "_" + str(args.num_image) + "_linear_tr.txt"),
+           os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_linear_tr.txt"))
+
 os.symlink(os.path.join(os.getcwd(),"tempDir",args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd"),
            os.path.join(os.getcwd(), "residualDir", args.prefix + "_" + str(args.num_image) + "_nonlinear_tr.nrrd"))
 
