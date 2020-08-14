@@ -99,7 +99,7 @@ for dataNum in range(1, args.num_subjects + 1):
                        "-g", args.dti_atlas_image, "-n", "3"]
     call(mcmApplyCommand)
 
-    mcmListFile.write(os.path.join('Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm") + "\n")
+    mcmListFile.write(os.path.join(os.getcwd(), 'Transformed_MCM', mcmPrefix + "_" + str(dataNum) + ".mcm") + "\n")
 
     mcmB0ApplyCommand = [animaApplyTransformSerie,
                          "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_B0_" + str(dataNum) + ".nrrd"),
@@ -108,7 +108,7 @@ for dataNum in range(1, args.num_subjects + 1):
                          "-g", args.dti_atlas_image]
     call(mcmB0ApplyCommand)
 
-    mcmB0ListFile.write(os.path.join('Transformed_MCM', mcmPrefix + "_B0_" + str(dataNum) + ".nrrd") + "\n")
+    mcmB0ListFile.write(os.path.join(os.getcwd(), 'Transformed_MCM', mcmPrefix + "_B0_" + str(dataNum) + ".nrrd") + "\n")
 
     mcmS2ApplyCommand = [animaApplyTransformSerie,
                          "-i", os.path.join(mcmPrefixBase, mcmPrefix + "_S2_" + str(dataNum) + ".nrrd"),
@@ -117,7 +117,7 @@ for dataNum in range(1, args.num_subjects + 1):
                          "-g", args.dti_atlas_image]
     call(mcmS2ApplyCommand)
 
-    mcmS2ListFile.write(os.path.join('Transformed_MCM', mcmPrefix + "_S2_" + str(dataNum) + ".nrrd") + "\n")
+    mcmS2ListFile.write(os.path.join(os.getcwd(), 'Transformed_MCM', mcmPrefix + "_S2_" + str(dataNum) + ".nrrd") + "\n")
 
     maskApplyCommand = [animaApplyTransformSerie,
                         "-i", os.path.join(maskPrefixBase, maskPrefix + "_" + str(dataNum) + ".nrrd"),
@@ -126,7 +126,7 @@ for dataNum in range(1, args.num_subjects + 1):
                         "-g", args.dti_atlas_image, "-n", "nearest"]
     call(maskApplyCommand)
 
-    maskListFile.write(os.path.join('Transformed_MCM', maskPrefix + "_" + str(dataNum) + ".nrrd") + "\n")
+    maskListFile.write(os.path.join(os.getcwd(), 'Transformed_MCM', maskPrefix + "_" + str(dataNum) + ".nrrd") + "\n")
 
     # Now apply the transform to all tractseg regions
     for track in tracksLists:
@@ -170,7 +170,7 @@ call(trackingCommand)
 for track in tracksLists:
     trackMasksListFile = open(os.path.join('Transformed_Tracts_Masks', 'listMasks.txt'), "w")
     for dataNum in range(1, args.num_subjects + 1):
-        trackMasksListFile.write(os.path.join('Transformed_Tracts_Masks', track + "_" + str(dataNum) + ".nrrd") + "\n")
+        trackMasksListFile.write(os.path.join(os.getcwd(), 'Transformed_Tracts_Masks', track + "_" + str(dataNum) + ".nrrd") + "\n")
 
     trackMasksListFile.close()
 
@@ -191,7 +191,7 @@ for track in tracksLists:
                                   "-o", os.path.join('Augmented_Atlas_Tracts', track + '_MCM_augmented_' + str(dataNum) + '.fds')]
         call(propsExtractionCommand)
 
-        trackListFile.write(os.path.join('Augmented_Atlas_Tracts', track + '_MCM_augmented_' + str(dataNum) + '.fds') + "\n")
+        trackListFile.write(os.path.join(os.getcwd(), 'Augmented_Atlas_Tracts', track + '_MCM_augmented_' + str(dataNum) + '.fds') + "\n")
 
     trackListFile.close()
 
