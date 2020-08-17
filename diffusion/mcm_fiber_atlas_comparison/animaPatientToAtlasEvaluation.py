@@ -60,6 +60,7 @@ animaDenseTensorSVFBMRegistration = os.path.join(animaDir, "animaDenseTensorSVFB
 animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSerie")
 animaTracksMCMPropertiesExtraction = os.path.join(animaDir, "animaTracksMCMPropertiesExtraction")
 animaPatientToGroupComparisonOnTracks = os.path.join(animaDir, "animaPatientToGroupComparisonOnTracks")
+animaFibersApplyTransformSerie = os.path.join(animaDir, "animaFibersApplyTransformSerie")
 
 os.makedirs('Preprocessed_Patients_DWI', exist_ok=True)
 os.makedirs('Patients_Tensors', exist_ok=True)
@@ -193,14 +194,27 @@ for track in tracksLists:
     # augment tracks of the atlas with MCM patient data
     propsExtractionCommand = [animaTracksMCMPropertiesExtraction, "-i", os.path.join(args.raw_tracts_folder, track + '.fds'),
                               "-m", os.path.join('Transformed_Patients_MCM', dwiPrefix + "_MCM_avg_onAtlas.mcm"),
-                              "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds')]
+                              "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds')]
     call(propsExtractionCommand)
 
     # Compare to controls list of augmented tracts
-    propsComparisonCommand = [animaPatientToGroupComparisonOnTracks, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds'),
+    propsComparisonCommand = [animaPatientToGroupComparisonOnTracks, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'),
                               "-l", os.path.join(args.tracts_folder, "listData_" + track + ".txt"),
                               "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
                               "-O", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
     call(propsComparisonCommand)
+
+    # Bring back fibers into native image space
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'),
+                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds')]
+    call(bringFibersBackCommand)
+
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
+                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds')]
+    call(bringFibersBackCommand)
+
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'),
+                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
+    call(bringFibersBackCommand)
 
 shutil.rmtree(tmpFolder)
