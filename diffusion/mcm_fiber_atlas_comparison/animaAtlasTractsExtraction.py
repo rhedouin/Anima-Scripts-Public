@@ -9,9 +9,7 @@ else:
     import ConfigParser as ConfParser
 
 import os
-import tempfile
 from subprocess import call
-import shutil
 
 configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
 if not os.path.exists(configFilePath):

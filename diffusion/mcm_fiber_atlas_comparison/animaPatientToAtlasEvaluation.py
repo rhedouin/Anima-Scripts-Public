@@ -130,15 +130,15 @@ for f in glob.glob(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM*"
         os.remove(f)
 
 # Register patient onto atlas (same as register DT Image in atlas construction)
-adcCommand = [animaComputeDTIScalarMaps, "-i", args.dti_atlas_image, "-a", "averageADC.nrrd"]
+tmpFolder = tempfile.mkdtemp()
+adcCommand = [animaComputeDTIScalarMaps, "-i", args.dti_atlas_image, "-a", os.path.join(tmpFolder, "averageADC.nrrd")]
 call(adcCommand)
 
 adcCommand = [animaComputeDTIScalarMaps, "-i", os.path.join("Patients_Tensors", dwiPrefix + "_Tensors.nrrd"),
               "-a", os.path.join("Patients_Tensors", dwiPrefix + "_ADC.nrrd")]
 call(adcCommand)
 
-tmpFolder = tempfile.mkdtemp()
-regCommand = [animaPyramidalBMRegistration, "-r", "averageADC.nrrd", "-m", os.path.join("Patients_Tensors", dwiPrefix + "_ADC.nrrd"),
+regCommand = [animaPyramidalBMRegistration, "-r", os.path.join(tmpFolder, "averageADC.nrrd"), "-m", os.path.join("Patients_Tensors", dwiPrefix + "_ADC.nrrd"),
               "-o", os.path.join(tmpFolder, "Patient_aff.nrrd"), "-O", os.path.join(tmpFolder, "Patient_aff_tr.txt"),
               "--ot", "2", "-p", "3", "-l", "0", "-I", "2", "--sym-reg", "2", "-s", "0"]
 call(regCommand)
@@ -150,7 +150,7 @@ command = [animaCreateImage, "-b", "1", "-v", "1", "-g", os.path.join("Patients_
            "-o", os.path.join(tmpFolder,"tmpFullMask.nrrd")]
 call(command)
 
-command = [animaApplyTransformSerie, "-g", "averageADC.nrrd", "-i", os.path.join(tmpFolder,"tmpFullMask.nrrd"),
+command = [animaApplyTransformSerie, "-g", os.path.join(tmpFolder, "averageADC.nrrd"), "-i", os.path.join(tmpFolder,"tmpFullMask.nrrd"),
            "-t", os.path.join(tmpFolder, "Patient_aff_tr.xml"), "-o", os.path.join(tmpFolder,"tmpMask_aff.nrrd"),
            "-n", "nearest"]
 call(command)
