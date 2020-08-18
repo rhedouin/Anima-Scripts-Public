@@ -210,15 +210,15 @@ for track in tracksLists:
     call(propsComparisonCommand)
 
     # Bring back fibers into native image space
-    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'),
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds')]
     call(bringFibersBackCommand)
 
-    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds')]
     call(bringFibersBackCommand)
 
-    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'),
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
     call(bringFibersBackCommand)
 
