@@ -128,6 +128,10 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
     # Now move results to MCM folder
     os.chdir("..")
     shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_avg.mcm"), os.path.join("MCM", "MCM_avg_" + str(dataNum) + ".mcm"))
+
+    if os.path.exists(os.path.join("MCM", "MCM_avg_" + str(dataNum))):
+        shutil.rmtree(os.path.join("MCM", "MCM_avg_" + str(dataNum)), ignore_errors=True)
+    
     shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_avg"), os.path.join("MCM", "MCM_avg_" + str(dataNum)))
     shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_B0_avg.nrrd"), os.path.join("MCM", "MCM_avg_B0_" + str(dataNum) + ".nrrd"))
     shutil.move(os.path.join("Preprocessed_DWI", "DWI_" + str(dataNum) + "_MCM_S2_avg.nrrd"), os.path.join("MCM", "MCM_avg_S2_" + str(dataNum) + ".nrrd"))

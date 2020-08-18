@@ -120,9 +120,14 @@ call(mcmCommand)
 # Now move results to MCM folder
 os.chdir("..")
 shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_avg.mcm"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg.mcm"))
+
+if os.path.exists(os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg")):
+    shutil.rmtree(os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg"), ignore_errors=True)
 shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_avg"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg"))
+
 shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_B0_avg.nrrd"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg_B0.nrrd"))
 shutil.move(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM_S2_avg.nrrd"), os.path.join("Patients_MCM", dwiPrefix + "_MCM_avg_S2.nrrd"))
+
 for f in glob.glob(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM*")):
     if os.path.isdir(f):
         shutil.rmtree(f, ignore_errors=True)
