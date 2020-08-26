@@ -17,7 +17,7 @@ import os
 import shutil
 from subprocess import call
 
-configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
+configFilePath = os.path.join(os.path.expanduser("~"), ".anima",  "config.txt")
 if not os.path.exists(configFilePath):
     print('Please create a configuration file for Anima python scripts. Refer to the README')
     quit()

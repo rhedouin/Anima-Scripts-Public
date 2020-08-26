@@ -13,7 +13,7 @@ if sys.version_info[0] > 2:
 else:
     import ConfigParser as ConfParser
 
-configFilePath = os.path.expanduser("~") + "/.anima/config.txt"
+configFilePath = os.path.join(os.path.expanduser("~"), ".anima",  "config.txt")
 if not os.path.exists(configFilePath):
     print('Please create a configuration file for Anima python scripts. Refer to the README')
     quit()
