@@ -29,6 +29,7 @@ parser.add_argument('-d', '--ref-dir', type=str, required=True, help='Reference 
 parser.add_argument('-r', '--ref-image', type=str, required=True, help='Reference image')
 parser.add_argument('-B', '--prefix-base', type=str, required=True, help='Prefix base')
 parser.add_argument('-p', '--prefix', type=str, required=True, help='Prefix')
+parser.add_argument('-e', '--files-extension', type=str, required=True, help='Input files extension')
 parser.add_argument('-b', '--bch-order', type=int, default=2, help='BCH order when composing transformations in rigid unbiased (default: 2)')
 parser.add_argument('-n', '--num-image', type=int, required=True, help='Image number')
 parser.add_argument('-c', '--num-cores', type=int, default=40, help='Number of cores to run on')
@@ -45,9 +46,7 @@ animaLinearTransformArithmetic = os.path.join(animaDir,"animaLinearTransformArit
 animaLinearTransformToSVF = os.path.join(animaDir,"animaLinearTransformToSVF")
 animaDenseTransformArithmetic = os.path.join(animaDir,"animaDenseTransformArithmetic")
 
-filesExtension = os.path.splitext(args.ref_image)[1]
-if filesExtension == '.gz':
-    filesExtension = os.path.splitext(os.path.splitext(args.ref_image)[0])[1] + filesExtension
+filesExtension = args.files_extension
 
 # Rigid / affine registration
 command = [animaPyramidalBMRegistration,"-r",args.ref_image,"-m",os.path.join(args.prefix_base,args.prefix + "_" + str(args.num_image) + filesExtension),
