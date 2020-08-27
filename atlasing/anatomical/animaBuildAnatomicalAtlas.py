@@ -110,12 +110,12 @@ for k in range(1,args.num_iterations + 1):
         numIt=0
         myfile.write("let index=${OAR_ARRAY_INDEX}+1\n")
         myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
-                     " -d " + os.getcwd() + " -r " + ref + " -B " + prefixBase + " -p " + prefix + "-e " + filesExtension +
+                     " -d " + os.getcwd() + " -r " + ref + " -B " + prefixBase + " -p " + prefix + " -e " + filesExtension +
                      " -n $index -b " + str(args.bch_order) + " -c " + str(args.num_cores))
     else:
         numIt=k
         myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
-                     " -d " + os.getcwd() + " -r " + ref + " -B " + prefixBase + " -p " + prefix + "-e " + filesExtension +
+                     " -d " + os.getcwd() + " -r " + ref + " -B " + prefixBase + " -p " + prefix + " -e " + filesExtension +
                      " -n $OAR_ARRAY_INDEX -b " + str(args.bch_order) + " -c " + str(args.num_cores))
 
     if args.rigid is True:
