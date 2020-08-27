@@ -128,8 +128,9 @@ for k in range(1,args.num_iterations + 1):
         oarRunCommand += ["-n","reg-" + str(k),"-a",str(previousMergeId),"-S", os.getcwd() + "/iterRun_" + str(k)]
 
     jobsIds = []
-    procStat = subprocess.Popen(oarRunCommand, stdout=subprocess.PIPE)
-    for statsLine in procStat.stdout:
+    procStat = subprocess.run(oarRunCommand, stdout=subprocess.PIPE)
+    statLines = procStat.stdout.decode('utf-8').split('\n')
+    for statsLine in statLines:
         if "OAR_JOB_ID" in statsLine:
             jobsIds += [statsLine.split("=")[1]]
 
@@ -160,8 +161,9 @@ for k in range(1,args.num_iterations + 1):
     for jobId in jobsIds:
         oarRunCommand += ["-a",jobId]
 
-    procStat = subprocess.Popen(oarRunCommand, stdout=subprocess.PIPE)
-    for statsLine in procStat.stdout:
+    procStat = subprocess.run(oarRunCommand, stdout=subprocess.PIPE)
+    statLines = procStat.stdout.decode('utf-8').split('\n')
+    for statsLine in statLines:
         if "OAR_JOB_ID" in statsLine:
             previousMergeId = statsLine.split("=")[1]
             break

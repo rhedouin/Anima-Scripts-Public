@@ -94,8 +94,9 @@ for i in range(0, N):
     os.chmod(filename, stat.S_IRWXU)
     oarRunCommand = ["oarsub","-n","reg-" + imageBasename,"-S", filename]
     jobsIds = []
-    procStat = subprocess.Popen(oarRunCommand, stdout=subprocess.PIPE)
-    for statsLine in procStat.stdout:
+    procStat = subprocess.run(oarRunCommand, stdout=subprocess.PIPE)
+    statLines = procStat.stdout.decode('utf-8').split('\n')
+    for statsLine in statLines:
         if "OAR_JOB_ID" in statsLine:
             jobsIds += [statsLine.split("=")[1]]
     

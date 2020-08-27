@@ -96,8 +96,9 @@ for k in range(args.start + 1, args.num_images + 1):
     else:
         oarRunCommand += ["-n","reg-" + str(k),"-a",str(previousMergeId),"-S", os.getcwd() + "/regRun_" + str(k)]
 
-    procStat = subprocess.Popen(oarRunCommand, stdout=subprocess.PIPE)
-    for statsLine in procStat.stdout:
+    procStat = subprocess.run(oarRunCommand, stdout=subprocess.PIPE)
+    statLines = procStat.stdout.decode('utf-8').split('\n')
+    for statsLine in statLines:
         if "OAR_JOB_ID" in statsLine:
             previousRegId = statsLine.split("=")[1]
             break
@@ -127,8 +128,9 @@ for k in range(args.start + 1, args.num_images + 1):
     oarRunCommand = ["oarsub","-n","bch-" + str(k),"-S",os.getcwd() + "/bchRun_" + str(k), "-a", str(previousRegId)]
     
     jobsIds = []
-    procStat = subprocess.Popen(oarRunCommand, stdout=subprocess.PIPE)
-    for statsLine in procStat.stdout:
+    procStat = subprocess.run(oarRunCommand, stdout=subprocess.PIPE)
+    statLines = procStat.stdout.decode('utf-8').split('\n')
+    for statsLine in statLines:
         if "OAR_JOB_ID" in statsLine:
             jobsIds += [statsLine.split("=")[1]]
 
@@ -155,8 +157,9 @@ for k in range(args.start + 1, args.num_images + 1):
         oarRunCommand += ["-a",jobId]
     oarRunCommand += ["-n","merge-" + str(k),"-S", os.getcwd() + "/mergeRun_" + str(k)]
 
-    procStat = subprocess.Popen(oarRunCommand, stdout=subprocess.PIPE)
-    for statsLine in procStat.stdout:
+    procStat = subprocess.run(oarRunCommand, stdout=subprocess.PIPE)
+    statLines = procStat.stdout.decode('utf-8').split('\n')
+    for statsLine in statLines:
         if "OAR_JOB_ID" in statsLine:
             previousMergeId = statsLine.split("=")[1]
             break
