@@ -103,7 +103,7 @@ for a in range(1,args.num_images+1):
 
     command = [animaApplyTransformSerie, "-i",
                os.path.join(args.prefix_base, args.prefix + "_" + str(a) + args.files_extension),
-               "-t", os.path.join("tempDir", "trsf_" + str(a) + ".xml"), "-g", args.ref_image + args.files_extension,
+               "-t", os.path.join("tempDir", "trsf_" + str(a) + ".xml"), "-g", args.ref_image,
                "-o",os.path.join("tempDir", args.prefix + "_" + str(a) + "_at.nrrd"),"-p",str(args.num_cores)]
     call(command)
     myfileImages.write(os.path.join("tempDir", args.prefix + "_" + str(a) + "_at.nrrd\n"))
@@ -111,8 +111,7 @@ for a in range(1,args.num_images+1):
     if os.path.exists(os.path.join("Masks", "Mask_" + str(a) + args.files_extension)):
         command = [animaApplyTransformSerie, "-i", os.path.join("Masks", "Mask_" + str(a) + args.files_extension),
                    "-t", os.path.join("tempDir", "trsf_" + str(a) + ".xml"),
-                   "-g", args.ref_image + args.files_extension,
-                   "-o", os.path.join("tempDir", "Mask_" + str(a) + "_at.nrrd"),
+                   "-g", args.ref_image, "-o", os.path.join("tempDir", "Mask_" + str(a) + "_at.nrrd"),
                    "-n", "nearest", "-p", str(args.num_cores)]
         call(command)
         myfileMasks.write(os.path.join("tempDir","Mask_" + str(a) + "_at.nrrd\n"))

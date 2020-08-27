@@ -53,11 +53,10 @@ if args.ref_image == "":
     # In the first iteration we take the first image as reference, then it is used in the dataset
     firstImage = 2
 else:
-    ref = os.path.splitext(args.ref_image)[0]
+    ref = args.ref_image
     filesExtension = os.path.splitext(args.ref_image)[1]
     if filesExtension == '.gz':
         filesExtension = os.path.splitext(ref)[1] + filesExtension
-        ref = os.path.splitext(ref)[0]
     firstImage = 1
 
 prefixBase = os.path.dirname(args.data_prefix)
@@ -70,14 +69,20 @@ if filesExtension == "":
     for f in filesList:
         if refBasename in f:
             filesExtension = os.path.splitext(f)[1]
+            test = os.path.splitext(f)[0]
             if filesExtension == '.gz':
-                filesExtension = os.path.splitext(os.path.splitext(f)[0])[1] + filesExtension
+                filesExtension = os.path.splitext(test)[1] + filesExtension
+                test = os.path.splitext(test)[0]
+
+            if test + filesExtension == refBasename:
+                ref = ref + filesExtension
+                break
 
 previousMergeId = 0
 
 for k in range(1,args.num_iterations + 1):
     if os.path.exists('it_' + str(k) + '_done'):
-        ref = "averageForm" + str(k)
+        ref = "averageForm" + str(k) + ".nrrd"
         firstImage = 1
         continue
 
@@ -105,12 +110,12 @@ for k in range(1,args.num_iterations + 1):
         numIt=0
         myfile.write("let index=${OAR_ARRAY_INDEX}+1\n")
         myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
-                     " -d " + os.getcwd() + " -r " + ref + filesExtension + " -B " + prefixBase + " -p " + prefix +
+                     " -d " + os.getcwd() + " -r " + ref + " -B " + prefixBase + " -p " + prefix +
                      " -n $index -b " + str(args.bch_order) + " -c " + str(args.num_cores))
     else:
         numIt=k
         myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical/animaAnatomicalRegisterImage.py") +
-                     " -d " + os.getcwd() + " -r " + ref + filesExtension + " -B " + prefixBase + " -p " + prefix +
+                     " -d " + os.getcwd() + " -r " + ref + " -B " + prefixBase + " -p " + prefix +
                      " -n $OAR_ARRAY_INDEX -b " + str(args.bch_order) + " -c " + str(args.num_cores))
 
     if args.rigid is True:
@@ -168,5 +173,5 @@ for k in range(1,args.num_iterations + 1):
             previousMergeId = statsLine.split("=")[1]
             break
 
-    ref = "averageForm" + str(k)
+    ref = "averageForm" + str(k) + ".nrrd"
     firstImage = 1
