@@ -71,7 +71,7 @@ if filesExtension == "":
         if refBasename in f:
             filesExtension = os.path.splitext(f)[1]
             if filesExtension == '.gz':
-                filesExtension = os.path.splitext(filesExtension)[1] + filesExtension
+                filesExtension = os.path.splitext(os.path.splitext(f)[0])[1] + filesExtension
 
 previousMergeId = 0
 
