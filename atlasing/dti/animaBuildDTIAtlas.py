@@ -73,6 +73,7 @@ if filesExtension == "":
                 filesExtension = os.path.splitext(os.path.splitext(f)[0])[1] + filesExtension
 
 previousMergeId = 0
+ref = ref + filesExtension
 
 for k in range(1, args.num_iterations + 1):
     if os.path.exists('it_' + str(k) + '_done'):

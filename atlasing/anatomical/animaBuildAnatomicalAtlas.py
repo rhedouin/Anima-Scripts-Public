@@ -69,16 +69,11 @@ if filesExtension == "":
     for f in filesList:
         if refBasename in f:
             filesExtension = os.path.splitext(f)[1]
-            test = os.path.splitext(f)[0]
             if filesExtension == '.gz':
-                filesExtension = os.path.splitext(test)[1] + filesExtension
-                test = os.path.splitext(test)[0]
-
-            if test + filesExtension == refBasename:
-                ref = ref + filesExtension
-                break
+                filesExtension = os.path.splitext(os.path.splitext(f)[0])[1] + filesExtension
 
 previousMergeId = 0
+ref = ref + filesExtension
 
 for k in range(1,args.num_iterations + 1):
     if os.path.exists('it_' + str(k) + '_done'):
