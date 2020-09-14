@@ -61,6 +61,7 @@ animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSeri
 animaTracksMCMPropertiesExtraction = os.path.join(animaDir, "animaTracksMCMPropertiesExtraction")
 animaPatientToGroupComparisonOnTracks = os.path.join(animaDir, "animaPatientToGroupComparisonOnTracks")
 animaFibersApplyTransformSerie = os.path.join(animaDir, "animaFibersApplyTransformSerie")
+animaFibersFDRCorrectPValues = os.path.join(animaDir, "animaFibersFDRCorrectPValues")
 
 os.makedirs('Preprocessed_Patients_DWI', exist_ok=True)
 os.makedirs('Patients_Tensors', exist_ok=True)
@@ -209,6 +210,10 @@ for track in tracksLists:
                               "-O", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
     call(propsComparisonCommand)
 
+    fdrCorrectionCommand = [animaFibersFDRCorrectPValues, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
+                            "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds'), "-q", "0.05"]
+    call(fdrCorrectionCommand)
+
     # Bring back fibers into native image space
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds')]
@@ -216,6 +221,10 @@ for track in tracksLists:
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds')]
+    call(bringFibersBackCommand)
+
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds'), "-I",
+                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds')]
     call(bringFibersBackCommand)
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'), "-I",
