@@ -208,7 +208,8 @@ for track in tracksLists:
     propsComparisonCommand = [animaPatientToGroupComparisonOnTracks, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'),
                               "-l", os.path.join(args.tracts_folder, "listData_" + track + ".txt"),
                               "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
-                              "-O", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
+                              "-O", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'),
+                              "-a", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds')]
     call(propsComparisonCommand)
 
     fdrCorrectionCommand = [animaFibersFDRCorrectPValues, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
@@ -238,6 +239,10 @@ for track in tracksLists:
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
+    call(bringFibersBackCommand)
+
+    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds'), "-I",
+                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds')]
     call(bringFibersBackCommand)
 
 shutil.rmtree(tmpFolder)
