@@ -50,7 +50,7 @@ animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 animaMCMApplyTransformSerie = os.path.join(animaDir, "animaMCMApplyTransformSerie")
 animaMCMAverageImages = os.path.join(animaDir, "animaMCMAverageImages")
 animaAverageImages = os.path.join(animaDir, "animaAverageImages")
-animaDTITractography = os.path.join(animaDir, "animaDTITractography")
+animaMCMTractography = os.path.join(animaDir, "animaMCMTractography")
 animaMajorityLabelVoting = os.path.join(animaDir, "animaMajorityLabelVoting")
 animaFibersFilterer = os.path.join(animaDir, "animaFibersFilterer")
 animaTracksMCMPropertiesExtraction = os.path.join(animaDir, "animaTracksMCMPropertiesExtraction")
@@ -160,7 +160,7 @@ thrCommand = [animaThrImage, "-t", "0", "-i", "averageADC.nrrd", "-o",
               "averageMask.nrrd"]
 call(thrCommand)
 
-trackingCommand = [animaDTITractography, "-i", args.dti_atlas_image, "-s", "averageMask.nrrd",
+trackingCommand = [animaMCMTractography, "-i", args.dti_atlas_image, "-s", "averageMask.nrrd",
                    "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds')]
 call(trackingCommand)
 
@@ -179,7 +179,7 @@ for track in tracksLists:
     fiberFilterCommand = [animaFibersFilterer, "-i", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds'),
                           "-o", os.path.join('Atlas_Tracts', track + '.fds'),
                           "-r", os.path.join('Transformed_Tracts_Masks', track + '_FilterMask.nrrd'),
-                          "-t", "1", "-t", "2"]
+                          "-e", "1", "-e", "2"]
     call(fiberFilterCommand)
 
     trackListFile = open(os.path.join('Augmented_Atlas_Tracts', 'listData_' + track + '.txt'), "w")
