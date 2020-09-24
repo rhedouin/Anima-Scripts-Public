@@ -160,8 +160,8 @@ thrCommand = [animaThrImage, "-t", "0", "-i", "averageADC.nrrd", "-o",
               "averageMask.nrrd"]
 call(thrCommand)
 
-trackingCommand = [animaDTITractography, "-i", args.dti_atlas_image, "-s", "averageMask.nrrd",
-                   "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds'), "--nb-fibers", "2"]
+trackingCommand = [animaDTITractography, "-i", args.dti_atlas_image, "-s", "averageMask.nrrd", "--nb-fibers", "2", "-a", "90", "-p", "0",
+                   "-o", os.path.join('Atlas_Tracts', 'WholeBrain_Tractography.fds')]
 call(trackingCommand)
 
 # Majority vote for tracts masks and filter main tractography
