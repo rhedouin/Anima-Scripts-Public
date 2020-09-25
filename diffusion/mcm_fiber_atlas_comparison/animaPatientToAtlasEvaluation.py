@@ -217,7 +217,7 @@ for track in tracksLists:
     call(fdrCorrectionCommand)
 
     aContrarioCommand = [animaFibersAContrario, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
-                         "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_AC.fds'), "-q", "0.05"]
+                         "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_AC.fds'), "-q", "0.05", "-r", "0.75"]
     call(aContrarioCommand)
 
     # Bring back fibers into native image space
