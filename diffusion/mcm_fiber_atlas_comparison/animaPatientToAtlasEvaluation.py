@@ -202,7 +202,7 @@ call(mcmS2ApplyCommand)
 
 # Align T1 reference image and DWI (not acquired in the same session
 T1Prefix = os.path.splitext(args.t1_image)[0]
-if os.path.splitext(args.t1)[1] == '.gz':
+if os.path.splitext(args.t1_image)[1] == '.gz':
     T1Prefix = os.path.splitext(T1Prefix)[0]
 
 t1RegistrationCommand = [animaPyramidalBMRegistration, "-r", os.path.join("Patients_Tensors", dwiPrefix + "_ADC.nrrd"),
