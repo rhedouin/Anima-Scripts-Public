@@ -35,6 +35,7 @@ parser.add_argument('-d', '--dw-dicom-folder', type=str, default="", help='Dicom
 parser.add_argument('-t', '--t1-image', type=str, required=True, help='T1 patient image (folder + name)')
 parser.add_argument('--dw-without-reversed-b0', action='store_true', help="No reversed B0 provided with the patient DWI, otherwise assume there is a file named by DWI prefix + reverse_b0.nii.gz")
 parser.add_argument('--type', type=str, default="tensor", help="Type of compartment model for fascicles (stick, zeppelin, tensor, noddi, ddi)")
+parser.add_argument('--register-t1-on-dwi', action='store_true', help="T1 registration on DWI is needed as they were not acquired in the same session")
 
 parser.add_argument('-a', '--dti-atlas-image', type=str, required=True, help='DTI atlas image')
 parser.add_argument('-r', '--raw-tracts-folder', type=str, default='Atlas_Tracts', help='Raw atlas tracts folder')
@@ -92,14 +93,17 @@ if os.path.splitext(dwiBasename)[1] == '.gz':
 preprocCommand = ["python3", os.path.join(animaScriptsDir, "diffusion", "animaDiffusionImagePreprocessing.py"), "-b", os.path.join(dwiPrefixBase, dwiPrefix + ".bval"),
                   "-t", args.t1_image, "-i", args.dw_patient_image]
 
+if args.register_t1_on_dwi is True:
+    preprocCommand += ["--register-t1-on-dwi"]
+
 if not args.dw_without_reversed_b0:
-    preprocCommand = preprocCommand + ["-r", os.path.join(dwiPrefixBase, dwiPrefix + "_reversed_b0.nii.gz")]
+    preprocCommand += ["-r", os.path.join(dwiPrefixBase, dwiPrefix + "_reversed_b0.nii.gz")]
 
 if args.dw_dicom_folder == "":
-    preprocCommand = preprocCommand + ["-g", os.path.join(dwiPrefixBase, dwiPrefix + ".bvec")]
+    preprocCommand += ["-g", os.path.join(dwiPrefixBase, dwiPrefix + ".bvec")]
 else:
     dicomGlobFiles = glob.glob(os.path.join(args.dw_dicom_folder, "*"))
-    preprocCommand = preprocCommand + ["-D"] + dicomGlobFiles
+    preprocCommand += ["-D"] + dicomGlobFiles
 
 call(preprocCommand)
 
@@ -196,6 +200,26 @@ mcmS2ApplyCommand = [animaApplyTransformSerie, "-i", os.path.join("Patients_MCM"
                      "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-g", args.dti_atlas_image]
 call(mcmS2ApplyCommand)
 
+# Align T1 reference image and DWI (not acquired in the same session
+T1Prefix = os.path.splitext(args.t1_image)[0]
+if os.path.splitext(args.t1)[1] == '.gz':
+    T1Prefix = os.path.splitext(T1Prefix)[0]
+
+t1RegistrationCommand = [animaPyramidalBMRegistration, "-r", os.path.join("Patients_Tensors", dwiPrefix + "_ADC.nrrd"),
+                         "-m", T1Prefix + "_masked.nrrd", "-o", os.path.join(tmpFolder, "T1_reg_rig.nrrd"), "-O", os.path.join(tmpFolder, "T1_reg_rig_tr.txt"),
+                         "-p", "4", "-l", "1", "--sp", "2"]
+
+if args.register_t1_on_dwi is True:
+    t1RegistrationCommand += ["-I", "1"]
+else:
+    t1RegistrationCommand += ["-I", "0"]
+
+call(t1RegistrationCommand)
+
+command = [animaTransformSerieXmlGenerator, "-i", os.path.join(tmpFolder, "T1_reg_rig_tr.txt"), "-i", os.path.join(tmpFolder, "Patient_aff_tr.txt"),
+           "-i", os.path.join(tmpFolder, dwiPrefix + "_nl_tr.nrrd"), "-o", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml")]
+call(command)
+
 # Process tracks: augmenting with patient and perform comparison
 for track in tracksLists:
     # augment tracks of the atlas with MCM patient data
@@ -222,27 +246,27 @@ for track in tracksLists:
 
     # Bring back fibers into native image space
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds')]
+                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds')]
     call(bringFibersBackCommand)
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds')]
+                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds')]
     call(bringFibersBackCommand)
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds')]
+                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds')]
     call(bringFibersBackCommand)
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_AC.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_AC.fds')]
+                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_AC.fds')]
     call(bringFibersBackCommand)
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
+                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
     call(bringFibersBackCommand)
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds')]
+                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds')]
     call(bringFibersBackCommand)
 
 shutil.rmtree(tmpFolder)
