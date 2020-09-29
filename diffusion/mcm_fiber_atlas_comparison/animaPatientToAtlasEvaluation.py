@@ -207,7 +207,7 @@ if os.path.splitext(args.t1_image)[1] == '.gz':
 
 t1RegistrationCommand = [animaPyramidalBMRegistration, "-r", os.path.join("Patients_Tensors", dwiPrefix + "_ADC.nrrd"),
                          "-m", T1Prefix + "_masked.nrrd", "-o", os.path.join(tmpFolder, "T1_reg_rig.nrrd"), "-O", os.path.join(tmpFolder, "T1_reg_rig_tr.txt"),
-                         "-p", "4", "-l", "1", "--sp", "2"]
+                         "-p", "4", "-l", "1", "--sp", "2", "-s", "0"]
 
 if args.register_t1_on_dwi is True:
     t1RegistrationCommand += ["-I", "1"]
