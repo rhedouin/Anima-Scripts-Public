@@ -64,12 +64,14 @@ animaPatientToGroupComparisonOnTracks = os.path.join(animaDir, "animaPatientToGr
 animaFibersApplyTransformSerie = os.path.join(animaDir, "animaFibersApplyTransformSerie")
 animaFibersFDRCorrectPValues = os.path.join(animaDir, "animaFibersFDRCorrectPValues")
 animaFibersAContrario = os.path.join(animaDir, "animaFibersAContrario")
+animaFibersDiseaseScores = os.path.join(animaDir, "animaFibersDiseaseScores")
 
 os.makedirs('Preprocessed_Patients_DWI', exist_ok=True)
 os.makedirs('Patients_Tensors', exist_ok=True)
 os.makedirs('Patients_MCM', exist_ok=True)
 os.makedirs('Transformed_Patients_MCM', exist_ok=True)
 os.makedirs('Patients_Augmented_Tracts', exist_ok=True)
+os.makedirs('Patients_Disease_Scores', exist_ok=True)
 
 # Tracts list imported from tractseg
 tracksLists = ['AF_left', 'AF_right', 'ATR_left', 'ATR_right', 'CA', 'CC_1', 'CC_2', 'CC_3', 'CC_4', 'CC_5', 'CC_6',
@@ -231,26 +233,21 @@ for track in tracksLists:
     # Compare to controls list of augmented tracts
     propsComparisonCommand = [animaPatientToGroupComparisonOnTracks, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'),
                               "-l", os.path.join(args.tracts_folder, "listData_" + track + ".txt"),
-                              "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
-                              "-O", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'),
+                              "-o", os.path.join(tmpFolder, track + '_' + dwiPrefix + '_PV.fds'),
                               "-a", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds')]
     call(propsComparisonCommand)
 
-    fdrCorrectionCommand = [animaFibersFDRCorrectPValues, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
+    fdrCorrectionCommand = [animaFibersFDRCorrectPValues, "-i", os.path.join(tmpFolder, track + '_' + dwiPrefix + '_PV.fds'),
                             "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds'), "-q", "0.05"]
     call(fdrCorrectionCommand)
 
-    aContrarioCommand = [animaFibersAContrario, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'),
+    aContrarioCommand = [animaFibersAContrario, "-i", os.path.join(tmpFolder, track + '_' + dwiPrefix + '_PV.fds'),
                          "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_AC.fds'), "-q", "0.05", "-r", "0.75"]
     call(aContrarioCommand)
 
     # Bring back fibers into native image space
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented_onAtlas.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_MCM_augmented.fds')]
-    call(bringFibersBackCommand)
-
-    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_PV.fds')]
     call(bringFibersBackCommand)
 
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds'), "-I",
@@ -261,12 +258,12 @@ for track in tracksLists:
                               "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_AC.fds')]
     call(bringFibersBackCommand)
 
-    bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds'), "-I",
-                              "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_zsc.fds')]
-    call(bringFibersBackCommand)
-
     bringFibersBackCommand = [animaFibersApplyTransformSerie, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds'), "-I",
                               "-t", os.path.join(tmpFolder, "Patient_T1_nl_tr.xml"), "-o", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_controls_avg.fds')]
     call(bringFibersBackCommand)
+
+    # Compute final scores CSV
+    command = [animaFibersDiseaseScores, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds'),
+               "-o", os.path.join('Patients_Disease_Scores', track + '_' + dwiPrefix + '.csv'), "-p", "6"]
 
 shutil.rmtree(tmpFolder)
