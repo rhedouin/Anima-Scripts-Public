@@ -265,5 +265,6 @@ for track in tracksLists:
     # Compute final scores CSV
     command = [animaFibersDiseaseScores, "-i", os.path.join('Patients_Augmented_Tracts', track + '_' + dwiPrefix + '_FDR.fds'),
                "-o", os.path.join('Patients_Disease_Scores', track + '_' + dwiPrefix + '.csv'), "-p", "6"]
+    call(command)
 
 shutil.rmtree(tmpFolder)
