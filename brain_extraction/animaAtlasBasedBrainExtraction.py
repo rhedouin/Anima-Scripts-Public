@@ -42,7 +42,7 @@ parser.add_argument('-S', '--second-step', action='store_true',
 parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
 parser.add_argument('-m', '--mask', type=str, help='Output path of the brain mask (default is inputName_brainMask.nrrd)')
 parser.add_argument('-b', '--brain', type=str, help='Output path of the masked brain (default is inputName_masked.nrrd)')
-parser.add_argument('-o', '--output', type=str, help="""Path where intermediate files (transformations, transformed images and rough mask) are stored 
+parser.add_argument('-if', '--intermediate_folder', type=str, help="""Path where intermediate files (transformations, transformed images and rough mask) are stored 
                     (default is an temporary directory created automatically and deleted after the process is finished ;
                     intermediate files are deleted by default and kept if this option is given).
                     """)
@@ -68,12 +68,12 @@ if os.path.splitext(brainImage)[1] == '.gz':
 
 brainMask = args.mask if args.mask else brainImagePrefix + "_brainMask.nrrd"
 maskedBrain = args.brain if args.brain else brainImagePrefix + "_masked.nrrd"
-outputFolder = args.output if args.output else tempfile.mkdtemp()
+intermediateFolder = args.intermediate_folder if args.intermediate_folder else tempfile.mkdtemp()
 
-if not os.path.isdir(outputFolder):
-    os.mkdir(outputFolder)
+if not os.path.isdir(intermediateFolder):
+    os.mkdir(intermediateFolder)
 
-brainImagePrefix = os.path.join(outputFolder, os.path.basename(brainImagePrefix))
+brainImagePrefix = os.path.join(intermediateFolder, os.path.basename(brainImagePrefix))
 
 # Decide on whether to use large image setting or small image setting
 command = [animaConvertImage, "-i", brainImage, "-I"]
@@ -144,4 +144,4 @@ else:
     copyfile(brainImagePrefix + "_rough_brainMask.nrrd", brainMask)
 
 if args.output is None:
-    rmtree(outputFolder)
+    rmtree(intermediateFolder)
