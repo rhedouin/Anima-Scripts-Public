@@ -111,9 +111,11 @@ for patient in patients.ls():
         # Remove bias
         call([animaN4BiasCorrection, "-i", brain, "-o", brain, "-B", "0.3"])
         
-        if templateFlair:
+        if templateFlair and templateFlair.exists():
             # Normalize intensities with the given template
             call([animaNyulStandardization, "-m", flair, "-r", templateFlair, "-o", flair])
+        elif not templateFlair.exists():
+            print('Template file ' + str(templateFlair) + ' not found, skipping normalization.')
         
         masks.append(mask)
     
