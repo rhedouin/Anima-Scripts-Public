@@ -11,8 +11,9 @@ else:
 
 import glob
 import os
-from shutil import copyfile
+from shutil import copyfile, rmtree
 from subprocess import call, check_output
+import tempfile
 
 configFilePath = os.path.join(os.path.expanduser("~"), ".anima",  "config.txt")
 if not os.path.exists(configFilePath):
@@ -39,6 +40,12 @@ parser.add_argument('-S', '--second-step', action='store_true',
                     help="Perform second step of atlas based cropping (might crop part of the external part of the brain)")
 
 parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
+parser.add_argument('-m', '--mask', type=str, help='Output path of the brain mask (default is inputName_brainMask.nrrd)')
+parser.add_argument('-b', '--brain', type=str, help='Output path of the masked brain (default is inputName_masked.nrrd)')
+parser.add_argument('-f', '--intermediate_folder', type=str, help="""Path where intermediate files (transformations, transformed images and rough mask) are stored 
+                    (default is an temporary directory created automatically and deleted after the process is finished ;
+                    intermediate files are deleted by default and kept if this option is given).
+                    """)
 
 args = parser.parse_args()
 
@@ -48,12 +55,25 @@ atlasImageMasked = animaExtraDataDir + "icc_atlas/Reference_T1_masked.nrrd"
 iccImage = animaExtraDataDir + "icc_atlas/BrainMask.nrrd"
 
 brainImage = args.input
+
+if not os.path.exists(brainImage):
+    sys.exit("Error: the image \"" + brainImage + "\" could not be found.")
+
 print("Brain masking image: " + brainImage)
 
 # Get floating image prefix
 brainImagePrefix = os.path.splitext(brainImage)[0]
 if os.path.splitext(brainImage)[1] == '.gz':
     brainImagePrefix = os.path.splitext(brainImagePrefix)[0]
+
+brainMask = args.mask if args.mask else brainImagePrefix + "_brainMask.nrrd"
+maskedBrain = args.brain if args.brain else brainImagePrefix + "_masked.nrrd"
+intermediateFolder = args.intermediate_folder if args.intermediate_folder else tempfile.mkdtemp()
+
+if not os.path.isdir(intermediateFolder):
+    os.mkdir(intermediateFolder)
+
+brainImagePrefix = os.path.join(intermediateFolder, os.path.basename(brainImagePrefix))
 
 # Decide on whether to use large image setting or small image setting
 command = [animaConvertImage, "-i", brainImage, "-I"]
@@ -114,16 +134,14 @@ if args.second_step is True:
     call(command)
 
     command = [animaApplyTransformSerie, "-i", iccImage, "-t", brainImagePrefix + "_nl_tr.xml", "-g", brainImage, "-o",
-               brainImagePrefix + "_brainMask.nrrd", "-n", "nearest"]
+               brainMask, "-n", "nearest"]
     call(command)
 
-    command = [animaMaskImage, "-i", brainImage, "-m", brainImagePrefix + "_brainMask.nrrd", "-o",
-               brainImagePrefix + "_masked.nrrd"]
+    command = [animaMaskImage, "-i", brainImage, "-m", brainMask, "-o", maskedBrain]
     call(command)
 else:
-    copyfile(brainImageRoughMasked,brainImagePrefix + "_masked.nrrd")
-    copyfile(brainImagePrefix + "_rough_brainMask.nrrd",brainImagePrefix + "_brainMask.nrrd")
+    copyfile(brainImageRoughMasked, maskedBrain)
+    copyfile(brainImagePrefix + "_rough_brainMask.nrrd", brainMask)
 
-for f in glob.glob(brainImagePrefix + "_rig*") + glob.glob(brainImagePrefix + "_aff*") \
-         + glob.glob(brainImagePrefix + "_nl*") + glob.glob(brainImagePrefix + "_rough*"):
-    os.remove(f)
+if args.output is None:
+    rmtree(intermediateFolder)
