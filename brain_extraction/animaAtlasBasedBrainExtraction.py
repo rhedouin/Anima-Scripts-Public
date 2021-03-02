@@ -143,5 +143,5 @@ else:
     copyfile(brainImageRoughMasked, maskedBrain)
     copyfile(brainImagePrefix + "_rough_brainMask.nrrd", brainMask)
 
-if args.output is None:
+if args.intermediate_folder is None:
     rmtree(intermediateFolder)
