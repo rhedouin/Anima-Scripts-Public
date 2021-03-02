@@ -42,7 +42,7 @@ parser.add_argument('-S', '--second-step', action='store_true',
 parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
 parser.add_argument('-m', '--mask', type=str, help='Output path of the brain mask (default is inputName_brainMask.nrrd)')
 parser.add_argument('-b', '--brain', type=str, help='Output path of the masked brain (default is inputName_masked.nrrd)')
-parser.add_argument('-if', '--intermediate_folder', type=str, help="""Path where intermediate files (transformations, transformed images and rough mask) are stored 
+parser.add_argument('-f', '--intermediate_folder', type=str, help="""Path where intermediate files (transformations, transformed images and rough mask) are stored 
                     (default is an temporary directory created automatically and deleted after the process is finished ;
                     intermediate files are deleted by default and kept if this option is given).
                     """)
