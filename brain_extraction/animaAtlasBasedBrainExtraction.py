@@ -140,8 +140,10 @@ if args.second_step is True:
     command = [animaMaskImage, "-i", brainImage, "-m", brainMask, "-o", maskedBrain]
     call(command)
 else:
-    copyfile(brainImageRoughMasked, maskedBrain)
-    copyfile(brainImagePrefix + "_rough_brainMask.nrrd", brainMask)
+    command = [animaConvertImage, "-i", brainImageRoughMasked, "-o", maskedBrain]
+    call(command)
+    command = [animaConvertImage, "-i", brainImagePrefix + "_rough_brainMask.nrrd", "-o", brainMask]
+    call(command)
 
 if args.intermediate_folder is None:
     rmtree(intermediateFolder)
