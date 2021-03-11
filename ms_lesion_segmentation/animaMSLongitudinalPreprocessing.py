@@ -114,11 +114,12 @@ for patientName in os.listdir(patients):
         # Remove bias
         call([animaN4BiasCorrection, "-i", brain, "-o", brain, "-B", "0.3"])
         
-        if templateFlair and os.path.exists(templateFlair):
-            # Normalize intensities with the given template
-            call([animaNyulStandardization, "-m", flair, "-r", templateFlair, "-o", flair])
-        elif not os.path.exists(templateFlair):
-            print('Template file ' + templateFlair + ' not found, skipping normalization.')
+        if templateFlair:
+            if os.path.exists(templateFlair):
+                # Normalize intensities with the given template
+                call([animaNyulStandardization, "-m", flair, "-r", templateFlair, "-o", flair])
+            else:
+                print('Template file ' + templateFlair + ' not found, skipping normalization.')
         
         masks.append(mask)
     
