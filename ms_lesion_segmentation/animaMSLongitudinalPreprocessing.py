@@ -12,7 +12,6 @@ import shutil
 #  - bias correction
 #  - (optional) normalization on the given template
 #  - mask flair images with the union of the masks of both time points
-#  - reorient the images in axial direction
 
 # Argument parsing
 parser = argparse.ArgumentParser(
@@ -72,7 +71,6 @@ animaNyulStandardization = os.path.join(animaDir, "animaNyulStandardization")
 animaThrImage = os.path.join(animaDir, "animaThrImage")
 animaMaskImage = os.path.join(animaDir, "animaMaskImage")
 animaImageArithmetic = os.path.join(animaDir, "animaImageArithmetic")
-animaConvertImage = os.path.join(animaDir, "animaConvertImage")
 
 # Calls a command, if there are errors: outputs them and exit
 def call(command):
@@ -87,9 +85,7 @@ def call(command):
 #  - brain extraction
 #  - bias correction
 #  - normalize (optional)
-#  - mask flair images with the union of the masks of both time points
-#  - reorient the images in axial direction
-
+#  - crop
 for patientName in os.listdir(patients):
 
     patient = os.path.join(patients, patientName)
@@ -126,8 +122,7 @@ for patientName in os.listdir(patients):
         
         masks.append(mask)
     
-    maskUnionName = 'brain_mask.nii.gz'
-    maskUnion = os.path.join(patientOutput, maskUnionName)
+    maskUnion = os.path.join(patientOutput, 'brain_mask.nii.gz')
 
     # Compute the union of the masks of both time points
     call([animaImageArithmetic, "-i", masks[0], "-a", masks[1], "-o", maskUnion])    # add the two masks
@@ -137,22 +132,14 @@ for patientName in os.listdir(patients):
     for mask in masks:
         os.remove(mask)
     
-    groundTruths = ['ground_truth_expert1.nii.gz', 'ground_truth_expert2.nii.gz', 'ground_truth_expert3.nii.gz', 'ground_truth_expert4.nii.gz', 'ground_truth.nii.gz']
-    flairs = ['flair_time01_on_middle_space.nii.gz', 'flair_time02_on_middle_space.nii.gz']
-
     # Copy the ground truths to the output directory
-    for imageName in groundTruths:
+    for imageName in ['ground_truth_expert1.nii.gz', 'ground_truth_expert2.nii.gz', 'ground_truth_expert3.nii.gz', 'ground_truth_expert4.nii.gz', 'ground_truth.nii.gz']:
         shutil.copyfile(os.path.join(patient, imageName), os.path.join(patientOutput, imageName))
 
     # Mask original FLAIR images with the union mask
-    for flairName in flairs:
+    for flairName in ['flair_time01_on_middle_space.nii.gz', 'flair_time02_on_middle_space.nii.gz']:
         
         flair = os.path.join(patient, flairName)
         brain = os.path.join(patientOutput, flairName)
 
         call([animaMaskImage, "-i", flair, "-m", maskUnion, "-o", brain])
-    
-    # Reorient images in axial direction
-    for imageName in ([maskUnionName] + groundTruths + flairs):
-        image = os.path.join(patientOutput, imageName)
-        call([animaConvertImage, "-R", "AXIAL", "-i", image, "-o", image])
