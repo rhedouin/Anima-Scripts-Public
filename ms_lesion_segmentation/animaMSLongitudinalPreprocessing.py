@@ -117,7 +117,7 @@ for patientName in os.listdir(patients):
         if templateFlair:
             if os.path.exists(templateFlair):
                 # Normalize intensities with the given template
-                call([animaNyulStandardization, "-m", flair, "-r", templateFlair, "-o", flair])
+                call([animaNyulStandardization, "-m", brain, "-r", templateFlair, "-o", brain])
             else:
                 print('Template file ' + templateFlair + ' not found, skipping normalization.')
         
