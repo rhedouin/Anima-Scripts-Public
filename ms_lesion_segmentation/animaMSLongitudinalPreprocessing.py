@@ -9,9 +9,9 @@ import shutil
 
 # The preprocessing consists in three or four steps:
 #  - brain extraction
+#  - mask flair images with the union of the masks of both time points
 #  - bias correction
 #  - (optional) normalization on the given template
-#  - mask flair images with the union of the masks of both time points
 
 # Argument parsing
 parser = argparse.ArgumentParser(
@@ -83,9 +83,9 @@ def call(command):
 
 # Preprocess all patients: 
 #  - brain extraction
+#  - mask flair images with the union of the masks of both time points
 #  - bias correction
 #  - normalize (optional)
-#  - crop
 for patientName in os.listdir(patients):
 
     patient = os.path.join(patients, patientName)
@@ -101,8 +101,11 @@ for patientName in os.listdir(patients):
     
     masks = []
 
-    # For both time points: extract brain and remove bias
-    for flairName in ['flair_time01_on_middle_space.nii.gz', 'flair_time02_on_middle_space.nii.gz']:
+    flairs = ['flair_time01_on_middle_space.nii.gz', 'flair_time02_on_middle_space.nii.gz']
+    groundTruths = ['ground_truth_expert1.nii.gz', 'ground_truth_expert2.nii.gz', 'ground_truth_expert3.nii.gz', 'ground_truth_expert4.nii.gz', 'ground_truth.nii.gz']
+
+    # For both time points: extract brain
+    for flairName in flairs:
         
         flair = os.path.join(patient, flairName)
         brain = os.path.join(patientOutput, flairName)
@@ -110,6 +113,27 @@ for patientName in os.listdir(patients):
 
         # Extract brain
         call(["python", animaBrainExtraction, "-i", flair, "--mask", mask, "--brain", brain])
+
+        masks.append(mask)
+
+    maskUnion = os.path.join(patientOutput, 'brain_mask.nii.gz')
+
+    # Compute the union of the masks of both time points
+    call([animaImageArithmetic, "-i", masks[0], "-a", masks[1], "-o", maskUnion])    # add the two masks
+    call([animaThrImage, "-i", maskUnion, "-t", "0.5", "-o", maskUnion])                  # threshold to get a binary mask
+
+    # Remove intermediate masks
+    for mask in masks:
+        os.remove(mask)
+
+    # For both time points: mask, remove bias and normalize if necessary
+    for flairName in flairs:
+        
+        flair = os.path.join(patient, flairName)
+        brain = os.path.join(patientOutput, flairName)
+
+        # Mask original FLAIR images with the union mask
+        call([animaMaskImage, "-i", flair, "-m", maskUnion, "-o", brain])
 
         # Remove bias
         call([animaN4BiasCorrection, "-i", brain, "-o", brain, "-B", "0.3"])
@@ -120,27 +144,7 @@ for patientName in os.listdir(patients):
                 call([animaNyulStandardization, "-m", brain, "-r", templateFlair, "-o", brain])
             else:
                 print('Template file ' + templateFlair + ' not found, skipping normalization.')
-        
-        masks.append(mask)
-    
-    maskUnion = os.path.join(patientOutput, 'brain_mask.nii.gz')
-
-    # Compute the union of the masks of both time points
-    call([animaImageArithmetic, "-i", masks[0], "-a", masks[1], "-o", maskUnion])    # add the two masks
-    call([animaThrImage, "-i", maskUnion, "-t", "0.5", "-o", maskUnion])                  # threshold to get a binary mask
-
-    # Remove intermediate masks
-    for mask in masks:
-        os.remove(mask)
     
     # Copy the ground truths to the output directory
-    for imageName in ['ground_truth_expert1.nii.gz', 'ground_truth_expert2.nii.gz', 'ground_truth_expert3.nii.gz', 'ground_truth_expert4.nii.gz', 'ground_truth.nii.gz']:
+    for imageName in groundTruths:
         shutil.copyfile(os.path.join(patient, imageName), os.path.join(patientOutput, imageName))
-
-    # Mask original FLAIR images with the union mask
-    for flairName in ['flair_time01_on_middle_space.nii.gz', 'flair_time02_on_middle_space.nii.gz']:
-        
-        flair = os.path.join(patient, flairName)
-        brain = os.path.join(patientOutput, flairName)
-
-        call([animaMaskImage, "-i", flair, "-m", maskUnion, "-o", brain])
