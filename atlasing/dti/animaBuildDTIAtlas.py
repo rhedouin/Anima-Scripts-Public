@@ -53,10 +53,11 @@ if args.ref_image == "":
     # In the first iteration we take the first image as reference, then it is used in the dataset
     firstImage = 2
 else:
-    ref = args.ref_image
+    ref = os.path.splitext(args.ref_image)[0]
     filesExtension = os.path.splitext(args.ref_image)[1]
     if filesExtension == '.gz':
         filesExtension = os.path.splitext(ref)[1] + filesExtension
+        ref=os.path.splitext(ref)[0]
     firstImage = 1
 
 prefixBase = os.path.dirname(args.data_prefix)
