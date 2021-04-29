@@ -25,6 +25,7 @@ configParser = ConfParser.RawConfigParser()
 configParser.read(configFilePath)
 
 animaDir = configParser.get("anima-scripts", 'anima')
+animaDataDir = configParser.get("anima-scripts", 'extra-data-root')
 animaScriptsDir = configParser.get("anima-scripts", 'anima-scripts-public-root')
 
 # Argument parsing
@@ -42,7 +43,6 @@ parser.add_argument('-d', '--dw-dicom-folders-prefix', type=str, default="", hel
 parser.add_argument('-t', '--t1-images-prefix', type=str, required=True, help='T1 images prefix (folder + basename)')
 parser.add_argument('--type', type=str, default="tensor", help="Type of compartment model for fascicles (stick, zeppelin, tensor, noddi, ddi)")
 
-parser.add_argument('--tractseg-fa-template', type=str, required=True, help="FA template in MNI space from TractSeg. Usually located in the tractseg package well hidden")
 parser.add_argument('--dw-without-reversed-b0', action='store_true', help="No reversed B0 provided with the DWIs")
 
 parser.add_argument('-b', '--bvalue-extract', type=int, default=0, help="Extract only a specific b-value for TractSeg (recommended for CUSP")
@@ -91,6 +91,7 @@ dwiPrefixBase = os.path.dirname(args.dw_images_prefix)
 dwiPrefix = os.path.basename(args.dw_images_prefix)
 t1PrefixBase = os.path.dirname(args.t1_images_prefix)
 t1Prefix = os.path.basename(args.t1_images_prefix)
+tractsegFATemplate = os.path.join(animaDataDir, "mni_template", "MNI_FA_Template.nii.gz")
 
 for dataNum in range(args.start_subject, args.num_subjects + 1):
     # Preprocess diffusion data
@@ -146,7 +147,7 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
     extractFACommand = [animaComputeDTIScalarMaps, "-i", os.path.join("Tensors", "DTI_" + str(dataNum) + ".nrrd"), "-f", os.path.join(tmpFolder,"Subject_FA.nrrd")]
     call(extractFACommand)
 
-    regFACommand = [animaPyramidalBMRegistration, "-r", args.tractseg_fa_template, "-m", os.path.join(tmpFolder,"Subject_FA.nrrd"), "-o", os.path.join(tmpFolder,"Subject_FA_OnMNI.nrrd"),
+    regFACommand = [animaPyramidalBMRegistration, "-r", tractsegFATemplate, "-m", os.path.join(tmpFolder,"Subject_FA.nrrd"), "-o", os.path.join(tmpFolder,"Subject_FA_OnMNI.nrrd"),
                     "-O", os.path.join(tmpFolder,"Subject_FA_OnMNI_tr.txt"), "-s", "0"]
     call(regFACommand)
 
@@ -154,7 +155,7 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
     call(trsfSerieGenCommand)
 
     applyTrsfCommand = [animaApplyTransformSerie, "-i", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + ".nrrd"), "-t", os.path.join(tmpFolder,"Subject_FA_OnMNI_tr.xml"),
-                        "-g", args.tractseg_fa_template, "-o", os.path.join(tmpFolder, "DWI_MNI.nii.gz"), "--grad", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + ".bvec"),
+                        "-g", tractsegFATemplate, "-o", os.path.join(tmpFolder, "DWI_MNI.nii.gz"), "--grad", os.path.join("Preprocessed_DWI","DWI_" + str(dataNum) + ".bvec"),
                         "-O", os.path.join(tmpFolder, "DWI_MNI.bvec")]
     call(applyTrsfCommand)
 
@@ -165,7 +166,7 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
     np.savetxt(os.path.join(tmpFolder, "DWI_MNI.bvec"), tmpData)
 
     applyTrsfCommand = [animaApplyTransformSerie, "-i", os.path.join("Preprocessed_DWI", "DWI_BrainMask_" + str(dataNum) + ".nrrd"),
-                        "-t", os.path.join(tmpFolder, "Subject_FA_OnMNI_tr.xml"), "-g", args.tractseg_fa_template,
+                        "-t", os.path.join(tmpFolder, "Subject_FA_OnMNI_tr.xml"), "-g", tractsegFATemplate,
                         "-o", os.path.join(tmpFolder, "DWI_MNI_brainMask.nii.gz"), "-n", "nearest"]
     call(applyTrsfCommand)
 
