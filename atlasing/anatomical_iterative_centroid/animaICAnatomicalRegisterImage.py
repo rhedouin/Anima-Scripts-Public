@@ -2,6 +2,7 @@
 # Warning: works only on unix-like systems, not windows where "python animaAnatomicalRegisterImage.py ..." has to be run
 
 import argparse
+import numpy as np
 import os
 import sys
 from subprocess import call
@@ -30,6 +31,7 @@ parser.add_argument('-r', '--ref-image', type=str, required=True, help='Referenc
 parser.add_argument('-B', '--prefix-base', type=str, required=True, help='Prefix base')
 parser.add_argument('-p', '--prefix', type=str, required=True, help='Prefix')
 parser.add_argument('-b', '--bch-order', type=int, default=2, help='BCH order when composing transformations in rigid unbiased (default: 2)')
+parser.add_argument('-w', '--weights-file', type=str, default="", help='Link to weights file if needed, otherwise using equal weights (default: none)')
 parser.add_argument('-i', '--num-iter', type=int, required=True, help='Iteration number of atlas creation')
 parser.add_argument('-c', '--num-cores', type=int, default=40, help='Number of cores to run on')
 parser.add_argument('--rigid', action='store_true', help="Unbiased atlas up to a rigid transformation")
@@ -106,11 +108,16 @@ if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k)
 if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_linearaddon_tr.nii.gz")):
     os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_linearaddon_tr.nii.gz"))
 
-
-wk=-1.0/k
+if not args.weights_file == "":
+    wk = -1.0/k
+    wkk = (k-1.0)/k
+else:
+    weights = np.loadtxt(fname=args.weights_file)
+    wk = -weights[k-1]/np.sum(weights[0:k])
+    wkk = np.sum(weights[0:k-1])/np.sum(weights[0:k])
+    
 command = [animaImageArithmetic, "-i", os.path.join("tempDir",args.prefix + "_" + str(k) + "_nonlinear_tr.nii.gz"),"-M",str(wk),"-o",os.path.join("tempDir","Tk.nii.gz")]
 call(command)
-wkk=(k-1.0)/k
 command = [animaImageArithmetic, "-i", os.path.join("tempDir",args.prefix + "_" + str(k) + "_nonlinear_tr.nii.gz"),"-M",str(wkk),"-o",os.path.join("tempDir","thetak_" + str(k) +".nii.gz")]
 call(command)
 

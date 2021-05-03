@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-d', '--ref-dir', type=str, required=True, help='Reference (working) folder')
 parser.add_argument('-B', '--prefix-base', type=str, required=True, help='Prefix base')
 parser.add_argument('-p', '--prefix', type=str, required=True, help='Prefix')
+parser.add_argument('-w', '--weights-file', type=str, default="", help='Link to weights file if needed, otherwise using equal weights (default: none)')
 parser.add_argument('-i', '--num-iter', type=int, required=True, help='Iteration number of atlas creation')
 parser.add_argument('-c', '--num-cores', type=int, default=40, help='Number of cores to run on')
 
@@ -48,7 +49,10 @@ for a in range(1,args.num_iter + 1):
 myfile.close()
 myfileMasks.close()
 
-command = [animaAverageImages, "-i", "avgImg.txt","-o","averageForm" + str(args.num_iter) +".nii.gz"]
+if not args.weights_file == "":
+    command = [animaAverageImages, "-i", "avgImg.txt","-o","averageForm" + str(args.num_iter) +".nii.gz"]
+else:
+    command = [animaAverageImages, "-i", "avgImg.txt","-o","averageForm" + str(args.num_iter) +".nii.gz", "-w", args.weights_file]
 
 if os.path.exists(os.path.join("Masks","Mask_1.nii.gz")):
     command += ["-m","masksIms.txt"]

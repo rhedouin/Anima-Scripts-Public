@@ -87,7 +87,7 @@ for i in range(0, N):
     # Registrations
   
     command = [animaPyramidalBMRegistration, "-m", image, "-r", ref, "-O", os.path.join(outDir, "registrations", str(i)) + "_aff.txt",
-            "-o", os.path.join(outDir, "registrations", str(i)) + "_anat_aff.nii.gz", "--sp", "3", "--ot", "2", "--out-rigid", os.path.join(outDir, "registrations", str(i)) + "_rig.txt" ] + pyramidOptions
+            "-o", os.path.join(outDir, "registrations", str(i)) + "_anat_aff.nii.gz", "-s", "0", "--sp", "3", "--ot", "2", "--out-rigid", os.path.join(outDir, "registrations", str(i)) + "_rig.txt" ] + pyramidOptions
     call(command)
     
     command = [animaTransformSerieXmlGenerator, "-i", os.path.join(outDir, "registrations", str(i)) + "_rig.txt", "-o", os.path.join(outDir, "registrations", str(i)) + "_rig.xml"]

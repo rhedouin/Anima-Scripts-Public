@@ -32,6 +32,7 @@ parser.add_argument('-p', '--data-prefix', type=str, required=True, help='Data p
 parser.add_argument('-n', '--num-images', type=int, required=True, help='Number of images in the atlas')
 parser.add_argument('-c', '--num-cores', type=int, default=8, help='Number of cores to run on (default: 8)')
 parser.add_argument('-b', '--bch-order', type=int, default=2, help='BCH order when composing transformations (default: 2)')
+parser.add_argument('-w', '--weights-file', type=str, default="", help='Link to weights file if needed, otherwise using equal weights (default: none)')
 parser.add_argument('-s', '--start', type=int, default=1, help='number of images in the starting atlas (default: 1)')
 parser.add_argument('--rigid', action='store_true', help="Unbiased atlas up to a rigid transformation")
 
@@ -80,7 +81,7 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalRegisterImage.py") +
                  " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
-                 " -b " + str(args.bch_order) + " -c " + str(args.num_cores))
+                 " -b " + str(args.bch_order) + " -w " + str(args.weights_file) + " -c " + str(args.num_cores))
 
     if args.rigid is True:
         myfile.write(" --rigid\n")
