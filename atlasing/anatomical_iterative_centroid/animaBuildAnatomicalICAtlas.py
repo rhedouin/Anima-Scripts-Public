@@ -147,7 +147,7 @@ for k in range(args.start + 1, args.num_images + 1):
     myfile.write("cd " + os.getcwd() + "\n")
 
     myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalMergeImages.py") +
-                 " -d " + os.getcwd() + " -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
+                 " -d " + os.getcwd() + " -B " + prefixBase + " -w " + str(args.weights_file) + " -p " + prefix + " -i " + str(k) +
                  " -c " + str(args.num_cores) + "\n")
 
     myfile.close()

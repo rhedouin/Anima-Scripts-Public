@@ -95,7 +95,7 @@ for i in range(0, len(atlasAge)):
 
     if os.path.exists(os.path.join(outDir, "atlas_"+str(i+1))):
         shutil.rmtree(os.path.join(outDir, "atlas_"+str(i+1)))
-
+    
     os.makedirs(os.path.join(outDir, "atlas_"+str(i+1)))
     os.makedirs(os.path.join(outDir, "atlas_"+str(i+1), prefix[0]))
     for j in range(0, len(sub)):
