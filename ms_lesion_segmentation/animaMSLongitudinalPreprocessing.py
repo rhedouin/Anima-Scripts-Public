@@ -42,12 +42,17 @@ The folder must follow this structure:
 """)
 parser.add_argument('-o', '--output', type=str, required=True, help='Output folder where the processed data will be saved (it will follow the same file structure as the input folder).')
 parser.add_argument('-t', '--template', type=str, help='Path to the template image used to normalize intensities (optional, skip normalization if not given).')
+parser.add_argument('-f', '--intermediate_folder', type=str, help="""Path where intermediate files (transformations, transformed images and rough mask) are stored 
+                    (default is an temporary directory created automatically and deleted after the process is finished ;
+                    intermediate files are deleted by default and kept if this option is given).
+                    """)
 
 args = parser.parse_args()
 
 patients = args.input
 templateFlair = args.template if args.template else None
 output = args.output
+intermediateFolder = args.intermediate_folder
 
 # The configuration file for anima is ~/.anima/config.txt (can be overridden with -a and -s arguments)
 configFilePath = os.path.join(os.path.expanduser("~"),'.anima', 'config.txt')
@@ -112,7 +117,7 @@ for patientName in os.listdir(patients):
         mask = os.path.join(patientOutput, flairName.replace('.nii.gz', '_mask.nii.gz'))
 
         # Extract brain
-        call(["python", animaBrainExtraction, "-i", flair, "--mask", mask, "--brain", brain])
+        call(["python", animaBrainExtraction, "-i", flair, "--mask", mask, "--brain", brain, "-f", intermediateFolder])
 
         masks.append(mask)
 
