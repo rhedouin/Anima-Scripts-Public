@@ -112,7 +112,7 @@ if args.mono_out != "":
     if os.path.splitext(args.mono_out)[1] == '.gz':
         outPrefix = os.path.splitext(outPrefix)[0]
 
-    monoT2Command = [animaDir + "animaT2EPGRelaxometryEstimation", "-l", inputImage, "-o", args.mono_out, "--tr", str(args.tr_value),
+    monoT2Command = [animaDir + "animaT2EPGRelaxometryEstimation", "-i", inputImage, "-o", args.mono_out, "--tr", str(args.tr_value),
                      "-e", str(args.echo_spacing), "--out-b1", outPrefix + "_B1.nrrd", "-O", outPrefix + "_M0.nrrd"]
 
     if maskImage != "":
