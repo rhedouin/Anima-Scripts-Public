@@ -49,7 +49,7 @@ for a in range(1,args.num_iter + 1):
 myfile.close()
 myfileMasks.close()
 
-if not args.weights_file == "":
+if args.weights_file == "":
     command = [animaAverageImages, "-i", "avgImg.txt","-o","averageForm" + str(args.num_iter) +".nii.gz"]
 else:
     command = [animaAverageImages, "-i", "avgImg.txt","-o","averageForm" + str(args.num_iter) +".nii.gz", "-w", args.weights_file]

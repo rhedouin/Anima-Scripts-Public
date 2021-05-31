@@ -108,7 +108,7 @@ if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k)
 if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_linearaddon_tr.nii.gz")):
     os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_linearaddon_tr.nii.gz"))
 
-if not args.weights_file == "":
+if args.weights_file == "":
     wk = -1.0/k
     wkk = (k-1.0)/k
 else:

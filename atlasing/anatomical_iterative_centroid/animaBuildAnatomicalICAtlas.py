@@ -81,12 +81,13 @@ for k in range(args.start + 1, args.num_images + 1):
 
     myfile.write(os.path.join(animaScriptsDir,"atlasing/anatomical_iterative_centroid/animaICAnatomicalRegisterImage.py") +
                  " -d " + os.getcwd() + " -r " + ref + ".nii.gz -B " + prefixBase + " -p " + prefix + " -i " + str(k) +
-                 " -b " + str(args.bch_order) + " -w " + str(args.weights_file) + " -c " + str(args.num_cores))
-
+                 " -b " + str(args.bch_order) + " -c " + str(args.num_cores))
+    
+    if not args.weights_file == "":
+        myfile.write(" -w " + args.weights_file)
     if args.rigid is True:
-        myfile.write(" --rigid\n")
-    else:
-        myfile.write("\n")
+        myfile.write(" --rigid")
+    myfile.write("\n")
 
     myfile.close()
     os.chmod(fileName, stat.S_IRWXU)
