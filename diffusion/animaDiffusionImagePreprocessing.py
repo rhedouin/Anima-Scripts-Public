@@ -85,8 +85,14 @@ if not (args.dicom == "") and not (args.grad == ""):
     # The goal here is to ensure the bvec file extracted from dcm2nii is well put
     # back in real coordinates. This assumes dcm2nii worked for gradient extraction which is not always the case.
     # If not, use the dicom folder option In any case, it works only for Siemens scanners though as far as I know
-    image = pydicom.read_file(args.dicom[0])
-    img_plane_position = image[0x0020, 0x0037].value
+
+    img_plane_position = np.zeros(3)
+    for dicom_file in args.dicom:
+        image = pydicom.read_file(dicom_file)
+        acq_number = image[0x0020, 0x0012].value
+        if acq_number == 1:
+            img_plane_position = image[0x0020, 0x0037].value
+
     V1 = np.array([float(img_plane_position[0]), float(img_plane_position[1]), float(img_plane_position[2])])
     V2 = np.array([float(img_plane_position[3]), float(img_plane_position[4]), float(img_plane_position[5])])
     V3 = np.cross(V1, V2)
@@ -100,9 +106,8 @@ if not (args.dicom == "") and not (args.grad == ""):
     outputBVec = tmpDWIImagePrefix + "_real.bvec"
 
 elif not (args.dicom == "") and (args.grad == ""):
-    bvecs_corrected = []
-    acq_number = -1
-    for dicom_file in sorted(args.dicom):
+    bvecs_corrected = [np.zeros(3)] * len(args.dicom)
+    for dicom_file in args.dicom:
         image = pydicom.read_file(dicom_file)
         bval = float(image[0x0019, 0x100c].value)
 
@@ -119,14 +124,8 @@ elif not (args.dicom == "") and (args.grad == ""):
             bvec = np.zeros(3)
             bvec = vec
 
-        add_bvec = True
-        if acq_number == image[0x0020, 0x0012].value :
-            add_bvec = False
-        else:
-            acq_number = image[0x0020, 0x0012].value
-
-        if add_bvec:
-            bvecs_corrected.append(bvec)
+        acq_number = image[0x0020, 0x0012].value
+        bvecs_corrected[acq_number - 1] = bvec
 
     bvecs_corrected = np.array(bvecs_corrected)
     np.savetxt(tmpDWIImagePrefix + "_real.bvec", bvecs_corrected.transpose(), fmt="%.12f")
