@@ -51,6 +51,7 @@ animaDenseTransformArithmetic = os.path.join(animaDir,"animaDenseTransformArithm
 animaImageArithmetic = os.path.join(animaDir,"animaImageArithmetic")
 animaCreateImage = os.path.join(animaDir,"animaCreateImage")
 
+    
 # Rigid / affine registration
 command = [animaPyramidalBMRegistration,"-r",args.ref_image,"-m",os.path.join(args.prefix_base,args.prefix + "_" + str(k) + ".nii.gz"),
            "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_aff.nii.gz"),
@@ -62,10 +63,23 @@ call(command)
 # Non-Rigid registration
 
 # For basic atlases
+## Weights to compute similarity metric in neutral space
+if args.weights_file == "":
+    wk = -1.0/k
+    wkk = (k-1.0)/k
+else:
+    weights = np.loadtxt(fname=args.weights_file)
+    wk = -weights[k-1]/np.sum(weights[0:k])
+    wkk = np.sum(weights[0:k-1])/np.sum(weights[0:k])
+
+if wkk == 0:
+    sys.exit('Error: weight must be greater than 0')
+
+
 command = [animaDenseSVFBMRegistration,"-r",args.ref_image,"-m",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_aff.nii.gz"),
            "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_bal.nii.gz"),
            "-O",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_bal_tr.nii.gz"),
-           "--sr","1","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","1"]
+           "--sr","1","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","1","-K","wkk"]
 call(command)
 
 if args.rigid is True:
@@ -108,13 +122,7 @@ if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k)
 if os.path.exists(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_linearaddon_tr.nii.gz")):
     os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_linearaddon_tr.nii.gz"))
 
-if args.weights_file == "":
-    wk = -1.0/k
-    wkk = (k-1.0)/k
-else:
-    weights = np.loadtxt(fname=args.weights_file)
-    wk = -weights[k-1]/np.sum(weights[0:k])
-    wkk = np.sum(weights[0:k-1])/np.sum(weights[0:k])
+
     
 command = [animaImageArithmetic, "-i", os.path.join("tempDir",args.prefix + "_" + str(k) + "_nonlinear_tr.nii.gz"),"-M",str(wk),"-o",os.path.join("tempDir","Tk.nii.gz")]
 call(command)
