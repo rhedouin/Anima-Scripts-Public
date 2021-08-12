@@ -79,7 +79,7 @@ if wkk == 0:
 command = [animaDenseSVFBMRegistration,"-r",args.ref_image,"-m",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_aff.nii.gz"),
            "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_bal.nii.gz"),
            "-O",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(k) + "_bal_tr.nii.gz"),
-           "--sr","1","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","1","-K","wkk"]
+           "--sr","1","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","1","-K",str(wkk)]
 call(command)
 
 if args.rigid is True:
