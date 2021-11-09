@@ -45,6 +45,10 @@ if args.mono_out == "" and args.gmm_out == "":
 
 tmpFolder = tempfile.mkdtemp()
 
+animaPyramidalBMRegistration = os.path.join(animaDir,"animaPyramidalBMRegistration")
+animaTransformSerieXmlGenerator = os.path.join(animaDir,"animaTransformSerieXmlGenerator")
+animaApplyTransformSerie = os.path.join(animaDir,"animaApplyTransformSerie")
+
 inputImage = args.input
 inputImagePrefix = os.path.splitext(inputImage)[0]
 if os.path.splitext(inputImage)[1] == '.gz':
@@ -56,12 +60,12 @@ tmpInputImagePrefix = os.path.join(tmpFolder, os.path.basename(inputImagePrefix)
 maskImage = ""
 if args.no_brain_masking is False:
     outputMask = ""
-    if args.image_for_mask == "":
-        imageToMask = tmpInputImagePrefix + "_extract.nrrd"
-        firstVolumeExtractionCommand = [animaDir + "animaCropImage", "-i", inputImage, "-o", imageToMask, "-t", "0",
-                                        "-T", "0"]
-        call(firstVolumeExtractionCommand)
+    imageToMask = tmpInputImagePrefix + "_extract.nrrd"
+    firstVolumeExtractionCommand = [animaDir + "animaCropImage", "-i", inputImage, "-o", imageToMask, "-t", "0",
+                                    "-T", "0"]
+    call(firstVolumeExtractionCommand)
 
+    if args.image_for_mask == "":
         brainExtractionCommand = ["python", animaScriptsDir + "brain_extraction/animaAtlasBasedBrainExtraction.py",
                                   "-i", imageToMask]
         call(brainExtractionCommand)
@@ -80,13 +84,22 @@ if args.no_brain_masking is False:
         outputMask = imagePrefix + "_brainMask.nrrd"
 
         # Now resample T1 on our reference volume
-        xmlCommand = [animaDir + "animaTransformSerieXmlGenerator", "-i", os.path.join(animaDataDir, "id.txt"),
-                      "-o", os.path.join(tmpFolder, "id.xml")]
-        call(xmlCommand)
+        tmpImagePrefix = os.path.join(tmpFolder, os.path.basename(imagePrefix))
 
-        resampleCommand = [animaDir + "animaApplyTransformSerie", "-i", outputMask, "-o",
-                           os.path.join(tmpFolder, "generatorMask.nrrd"), "-t", os.path.join(tmpFolder, "id.xml"),
-                           "-g", inputImage, "-n", "nearest"]
+        imageRegistrationCommand = [animaPyramidalBMRegistration, "-r",
+                                    imageToMask, "-m", args.image_for_mask, "-o",
+                                    tmpImagePrefix + "_rig.nrrd", "-O", tmpImagePrefix + "_rig_tr.txt",
+                                    "-p", "4", "-l", "1", "--sp", "2", "-I", "1"]
+
+        call(imageRegistrationCommand)
+
+        command = [animaTransformSerieXmlGenerator, "-i", tmpImagePrefix + "_rig_tr.txt", "-o",
+                   tmpImagePrefix + "_rig_tr.xml"]
+        call(command)
+
+        resampleCommand = [animaApplyTransformSerie, "-i", outputMask, "-t",
+                           tmpImagePrefix + "_rig_tr.xml", "-o", os.path.join(tmpFolder, "generatorMask.nrrd"),
+                           "-t", tmpImagePrefix + "_rig_tr.xml", "-g", inputImage, "-n", "nearest"]
         call(resampleCommand)
 
         outputMask = os.path.join(tmpFolder, "generatorMask.nrrd")
@@ -141,7 +154,7 @@ if args.gmm_out != "":
     if t1Image != "":
         multiT2Command = multiT2Command + ["--t1", t1Image]
 
-    print("Running multi T2 estimation")
+    print("Running GMM T2 estimation")
     call(multiT2Command)
 
     if args.gmm_out != "":
