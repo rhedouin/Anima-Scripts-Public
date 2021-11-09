@@ -128,13 +128,12 @@ if args.mono_out != "":
 if args.gmm_out != "":
     multiT2Command = [animaDir + "animaGMMT2RelaxometryEstimation", "-i", inputImage, "-e", str(args.echo_spacing)]
 
-    if args.gmm_out != "":
-        outPrefix = os.path.splitext(args.gmm_out)[0]
-        if os.path.splitext(args.gmm_out)[1] == '.gz':
-            outPrefix = os.path.splitext(outPrefix)[0]
+    outPrefix = os.path.splitext(args.gmm_out)[0]
+    if os.path.splitext(args.gmm_out)[1] == '.gz':
+        outPrefix = os.path.splitext(outPrefix)[0]
 
-        multiT2Command = multiT2Command + ["--out-b1", outPrefix + "_B1.nrrd", "--out-m0", outPrefix + "_M0.nrrd",
-                                           "-O", args.gmm_out,"-o", outPrefix + "_MWF.nrrd"]
+    multiT2Command = multiT2Command + ["--out-b1", outPrefix + "_B1.nrrd", "--out-m0", outPrefix + "_M0.nrrd",
+                                       "-O", args.gmm_out,"-o", outPrefix + "_MWF.nrrd"]
 
     if maskImage != "":
         multiT2Command = multiT2Command + ["-m", maskImage]
