@@ -99,7 +99,7 @@ if args.no_brain_masking is False:
 
         resampleCommand = [animaApplyTransformSerie, "-i", outputMask, "-t",
                            tmpImagePrefix + "_rig_tr.xml", "-o", os.path.join(tmpFolder, "generatorMask.nrrd"),
-                           "-t", tmpImagePrefix + "_rig_tr.xml", "-g", inputImage, "-n", "nearest"]
+                           "-g", inputImage, "-n", "nearest"]
         call(resampleCommand)
 
         outputMask = os.path.join(tmpFolder, "generatorMask.nrrd")
