@@ -45,7 +45,7 @@ animaAverageImages = os.path.join(animaDir,"animaAverageImages")
 animaImageArithmetic = os.path.join(animaDir,"animaImageArithmetic")
 animaTransformSerieXmlGenerator = os.path.join(animaDir,"animaTransformSerieXmlGenerator")
 animaTensorApplyTransformSerie = os.path.join(animaDir,"animaTensorApplyTransformSerie")
-animaComputeDTIScalarMaps = os.path.join(animaDir,"animaComputeDTIScalarMaps")
+animaDTIScalarMaps = os.path.join(animaDir,"animaDTIScalarMaps")
 animaThrImage = os.path.join(animaDir,"animaThrImage")
 animaMaskImage = os.path.join(animaDir,"animaMaskImage")
 
@@ -111,7 +111,7 @@ for a in range(1,args.num_images+1):
     call(command)
     myfileImages.write(os.path.join("tempDir", args.prefix + "_" + str(a) + "_at.nrrd\n"))
 
-    command = [animaComputeDTIScalarMaps,"-i",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nrrd"),
+    command = [animaDTIScalarMaps,"-i",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at.nrrd"),
                "-a",os.path.join("tempDir",args.prefix + "_" + str(a) + "_at_ADC.nrrd")]
     call(command)
 

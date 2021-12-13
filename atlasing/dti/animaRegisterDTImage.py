@@ -39,7 +39,7 @@ args = parser.parse_args()
 os.chdir(args.ref_dir)
 basePrefBase = os.path.dirname(args.prefix_base)
 
-animaComputeDTIScalarMaps = os.path.join(animaDir,"animaComputeDTIScalarMaps")
+animaDTIScalarMaps = os.path.join(animaDir,"animaDTIScalarMaps")
 animaCreateImage = os.path.join(animaDir,"animaCreateImage")
 animaMaskImage = os.path.join(animaDir,"animaMaskImage")
 animaThrImage = os.path.join(animaDir,"animaThrImage")
@@ -55,12 +55,12 @@ animaTensorApplyTransformSerie = os.path.join(animaDir,"animaTensorApplyTransfor
 filesExtension = args.files_extension
 
 # Extract DTI scalar map
-command = [animaComputeDTIScalarMaps,
+command = [animaDTIScalarMaps,
            "-i", os.path.join(args.prefix_base, args.prefix + "_" + str(args.num_image) + filesExtension),
            "-a", os.path.join(args.prefix_base, args.prefix + "_" + str(args.num_image) + "_ADC.nrrd")]
 call(command)
 
-command = [animaComputeDTIScalarMaps, "-i", args.ref_image, "-a",
+command = [animaDTIScalarMaps, "-i", args.ref_image, "-a",
            os.path.join(basePrefBase, "tempDir", args.prefix + "_" + str(args.num_image) + "_ref_ADC.nrrd")]
 call(command)
 
