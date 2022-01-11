@@ -89,9 +89,16 @@ if not (args.dicom == "") and not (args.grad == ""):
     img_plane_position = np.zeros(3)
     for dicom_file in args.dicom:
         image = pydicom.read_file(dicom_file)
-        acq_number = image[0x0020, 0x0012].value
-        if acq_number == 1:
-            img_plane_position = image[0x0020, 0x0037].value
+        dicomBaseFormat = [0x0020, 0x0012] in image
+
+        if dicomBaseFormat:
+            acq_number = image[0x0020, 0x0012].value
+            if acq_number == 1:
+                img_plane_position = image[0x0020, 0x0037].value
+        else:
+            acq_number = image[0x5200, 0x9230].value[0][0x0021, 0x1101].value[0][0x0020, 0x0012].value
+            if acq_number == 1:
+                img_plane_position = image[0x5200, 0x9230].value[0][0x0020, 0x9116].value[0][0x0020, 0x0037].value
 
     V1 = np.array([float(img_plane_position[0]), float(img_plane_position[1]), float(img_plane_position[2])])
     V2 = np.array([float(img_plane_position[3]), float(img_plane_position[4]), float(img_plane_position[5])])
@@ -109,22 +116,39 @@ elif not (args.dicom == "") and (args.grad == ""):
     bvecs_corrected = [np.zeros(3)] * len(args.dicom)
     for dicom_file in args.dicom:
         image = pydicom.read_file(dicom_file)
-        bval = float(image[0x0019, 0x100c].value)
+        dicomBaseFormat = [0x0019, 0x100c] in image
 
-        if image[0x0019, 0x100d].value == 'NONE' or bval == 0:
+        if dicomBaseFormat:
+            bval = float(image[0x0019, 0x100c].value)
+            directionality = image[0x0019, 0x100d].value
+        else:
+            bval = image[0x5200, 0x9230].value[0][0x0018, 0x9117].value[0][0x0018, 0x9087].value
+            directionality = image[0x5200, 0x9230].value[0][0x0018, 0x9117].value[0][0x0018, 0x9075].value
+
+        if directionality == 'NONE' or bval == 0:
             bvec = [0, 0, 0]
         else:
             vec = []
-            if type(image[0x0019, 0x100e].value) == type(list()):
-                vec = np.array(image[0x0019, 0x100e].value)
+
+            if dicomBaseFormat:
+                vecData = image[0x0019, 0x100e].value
             else:
-                buff = struct.unpack('ddd', image[0x0019, 0x100e].value)
+                vecData = image[0x5200, 0x9230].value[0][0x0018,0x9117].value[0][0x0018,0x9076].value[0][0x0018,0x9089].value
+
+            if type(vecData) == type(list()):
+                vec = np.array(vecData)
+            else:
+                buff = struct.unpack('ddd', vecData)
                 vec = np.array(buff)
 
             bvec = np.zeros(3)
             bvec = vec
 
-        acq_number = image[0x0020, 0x0012].value
+        if dicomBaseFormat:
+            acq_number = image[0x0020, 0x0012].value
+        else:
+            acq_number = image[0x5200, 0x9230].value[0][0x0021, 0x1101].value[0][0x0020, 0x0012].value
+            
         bvecs_corrected[acq_number - 1] = bvec
 
     bvecs_corrected = np.array(bvecs_corrected)
