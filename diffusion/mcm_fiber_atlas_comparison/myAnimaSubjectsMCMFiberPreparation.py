@@ -110,7 +110,6 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
     preprocCommand = preprocCommand + ["--temp-folder", args.temp_folder]
 
     call(preprocCommand)
-    sys.exit()
 
 #   Move preprocessed results to output folders
     shutil.move(os.path.join(dwiPrefixBase, dwiPrefix + "_" + str(dataNum) + "_Tensors.nrrd"), os.path.join("DTI", outputPrefix + "_DTI_" + str(dataNum) + ".nrrd"))
