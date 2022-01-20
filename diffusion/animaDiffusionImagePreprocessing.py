@@ -3,7 +3,7 @@
 
 import sys
 import argparse
-import tempfile
+import uuid
 import pydicom
 import numpy as np
 import struct
@@ -48,9 +48,15 @@ parser.add_argument('--register-t1-on-dwi', action='store_true',
                     help="T1 registration on DWI is needed as they were not acquired in the same session")
 parser.add_argument('-i', '--input', type=str, required=True, help='DWI file to process')
 
+parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
+                    help='Keep intermediate folder after script end')
+
 args = parser.parse_args()
 
-tmpFolder = tempfile.mkdtemp()
+tmpFolder = os.path.join(os.path.dirname(args.input), 'diff_preproc_' + str(uuid.uuid1()))
+
+if not os.path.isdir(tmpFolder):
+    os.mkdir(tmpFolder)
 
 animaEddyCurrentCorrection = os.path.join(animaDir,"animaEddyCurrentCorrection")
 animaConvertImage = os.path.join(animaDir,"animaConvertImage")
@@ -148,7 +154,7 @@ elif not (args.dicom == "") and (args.grad == ""):
             acq_number = image[0x0020, 0x0012].value
         else:
             acq_number = image[0x5200, 0x9230].value[0][0x0021, 0x1101].value[0][0x0020, 0x0012].value
-            
+
         bvecs_corrected[acq_number - 1] = bvec
 
     bvecs_corrected = np.array(bvecs_corrected)
@@ -333,4 +339,5 @@ if args.no_brain_masking is False:
 
 call(dtiEstimationCommand)
 
-shutil.rmtree(tmpFolder)
+if not args.keep_intermediate_folder:
+    shutil.rmtree(tmpFolder)

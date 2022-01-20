@@ -8,7 +8,7 @@ if sys.version_info[0] > 2:
 else:
     import ConfigParser as ConfParser
 
-import tempfile
+import uuid
 import glob
 import os
 import shutil
@@ -45,6 +45,9 @@ parser.add_argument('--type', type=str, default="tensor", help="Type of compartm
 parser.add_argument('--dw-without-reversed-b0', action='store_true', help="No reversed B0 provided with the DWIs")
 
 parser.add_argument('-b', '--bvalue-extract', type=int, default=0, help="Extract only a specific b-value for TractSeg (recommended for CUSP)")
+
+parser.add_argument('-K', '--keep-intermediate-folders', action='store_true',
+                    help='Keep intermediate folders after script end')
 
 args = parser.parse_args()
 
@@ -142,7 +145,11 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
             os.remove(f)
 
     # Now transform subject FA to MNI reference FA template in tractseg
-    tmpFolder = tempfile.mkdtemp()
+    tmpFolder = os.path.join(os.path.dirname(dwiPrefixBase), 'subject_mcm_preparation_' + str(uuid.uuid1()))
+
+    if not os.path.isdir(tmpFolder):
+        os.mkdir(tmpFolder)
+
     extractFACommand = [animaComputeDTIScalarMaps, "-i", os.path.join("Tensors", "DTI_" + str(dataNum) + ".nrrd"), "-f", os.path.join(tmpFolder,"Subject_FA.nrrd")]
     call(extractFACommand)
 
@@ -220,4 +227,5 @@ for dataNum in range(args.start_subject, args.num_subjects + 1):
                             "-o", os.path.join("Tracts_Masks", track + "_" + str(dataNum) + ".nrrd"), "-I", "-n", "nearest"]
         call(applyTrsfCommand)
 
-    shutil.rmtree(tmpFolder)
+    if not args.keep_intermediate_folders:
+        shutil.rmtree(tmpFolder)

@@ -13,7 +13,7 @@ import glob
 import os
 from shutil import copyfile, rmtree
 from subprocess import call, check_output
-import tempfile
+import uuid
 
 configFilePath = os.path.join(os.path.expanduser("~"), ".anima",  "config.txt")
 if not os.path.exists(configFilePath):
@@ -42,10 +42,8 @@ parser.add_argument('-S', '--second-step', action='store_true',
 parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
 parser.add_argument('-m', '--mask', type=str, help='Output path of the brain mask (default is inputName_brainMask.nrrd)')
 parser.add_argument('-b', '--brain', type=str, help='Output path of the masked brain (default is inputName_masked.nrrd)')
-parser.add_argument('-f', '--intermediate_folder', type=str, help="""Path where intermediate files (transformations, transformed images and rough mask) are stored 
-                    (default is an temporary directory created automatically and deleted after the process is finished ;
-                    intermediate files are deleted by default and kept if this option is given).
-                    """)
+parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
+                    help='Keep intermediate folder after script end')
 
 args = parser.parse_args()
 
@@ -68,7 +66,7 @@ if os.path.splitext(brainImage)[1] == '.gz':
 
 brainMask = args.mask if args.mask else brainImagePrefix + "_brainMask.nrrd"
 maskedBrain = args.brain if args.brain else brainImagePrefix + "_masked.nrrd"
-intermediateFolder = args.intermediate_folder if args.intermediate_folder else tempfile.mkdtemp()
+intermediateFolder = os.path.join(os.path.dirname(args.input), 'brain_extract_' + str(uuid.uuid1()))
 
 if not os.path.isdir(intermediateFolder):
     os.mkdir(intermediateFolder)
@@ -145,5 +143,5 @@ else:
     command = [animaConvertImage, "-i", brainImagePrefix + "_rough_brainMask.nrrd", "-o", brainMask]
     call(command)
 
-if args.intermediate_folder is None:
+if not args.keep_intermediate_folder:
     rmtree(intermediateFolder)

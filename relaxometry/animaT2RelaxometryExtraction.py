@@ -3,7 +3,7 @@
 
 import sys
 import argparse
-import tempfile
+import uuid
 import os
 import shutil
 from subprocess import call
@@ -38,12 +38,18 @@ parser.add_argument('-o', '--mono-out', type=str, default="", help="Mono T2 esti
 parser.add_argument('-g', '--gmm-out', type=str, default="", help="Multi T2 weights estimation output")
 parser.add_argument('--no-brain-masking', action='store_true', help="Do not perform any brain masking, may be much longer")
 
+parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
+                    help='Keep intermediate folder after script end')
+
 args = parser.parse_args()
 if args.mono_out == "" and args.gmm_out == "":
     print('No output was specified, please specify at least one of mono-out, gmm-out')
     quit()
 
-tmpFolder = tempfile.mkdtemp()
+tmpFolder = os.path.join(os.path.dirname(args.reference), 't2_relaxo_' + str(uuid.uuid1()))
+
+if not os.path.isdir(tmpFolder):
+    os.mkdir(tmpFolder)
 
 animaPyramidalBMRegistration = os.path.join(animaDir,"animaPyramidalBMRegistration")
 animaTransformSerieXmlGenerator = os.path.join(animaDir,"animaTransformSerieXmlGenerator")
@@ -161,4 +167,5 @@ if args.gmm_out != "":
         collapseCommand = [animaDir + "animaCollapseImage", "-i", args.gmm_out, "-o", args.gmm_out]
         call(collapseCommand)
 
-shutil.rmtree(tmpFolder)
+if not args.keep_intermediate_folder:
+    shutil.rmtree(tmpFolder)

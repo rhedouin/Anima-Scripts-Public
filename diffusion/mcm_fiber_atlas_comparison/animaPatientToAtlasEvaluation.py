@@ -8,7 +8,7 @@ if sys.version_info[0] > 2:
 else:
     import ConfigParser as ConfParser
 
-import tempfile
+import uuid
 import os
 import glob
 from subprocess import call
@@ -40,6 +40,9 @@ parser.add_argument('--register-t1-on-dwi', action='store_true', help="T1 regist
 parser.add_argument('-a', '--dti-atlas-image', type=str, required=True, help='DTI atlas image')
 parser.add_argument('-r', '--raw-tracts-folder', type=str, default='Atlas_Tracts', help='Raw atlas tracts folder')
 parser.add_argument('--tracts-folder', type=str, default='Augmented_Atlas_Tracts', help='Atlas tracts augmented with controls data')
+
+parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
+                    help='Keep intermediate folder after script end')
 
 args = parser.parse_args()
 
@@ -142,7 +145,11 @@ for f in glob.glob(os.path.join("Preprocessed_Patients_DWI", dwiPrefix + "_MCM*"
         os.remove(f)
 
 # Register patient onto atlas (same as register DT Image in atlas construction)
-tmpFolder = tempfile.mkdtemp()
+tmpFolder = os.path.join(os.path.dirname(dwiPrefixBase), 'patient_eval_' + str(uuid.uuid1()))
+
+if not os.path.isdir(tmpFolder):
+    os.mkdir(tmpFolder)
+
 adcCommand = [animaComputeDTIScalarMaps, "-i", args.dti_atlas_image, "-a", os.path.join(tmpFolder, "averageADC.nrrd")]
 call(adcCommand)
 
@@ -262,4 +269,5 @@ for track in tracksLists:
                "-o", os.path.join('Patients_Disease_Scores', track + '_' + dwiPrefix + '.csv'), "-p", "6"]
     call(command)
 
-shutil.rmtree(tmpFolder)
+if not args.keep_intermediate_folder:
+    shutil.rmtree(tmpFolder)

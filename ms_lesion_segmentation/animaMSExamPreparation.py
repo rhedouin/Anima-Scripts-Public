@@ -10,7 +10,7 @@ else:
 
 import os
 import shutil
-import tempfile
+import uuid
 from subprocess import call, check_output
 
 configFilePath = os.path.join(os.path.expanduser("~"), ".anima",  "config.txt")
@@ -35,9 +35,15 @@ parser.add_argument('-f', '--flair', required=True, help='Path to the MS patient
 parser.add_argument('-t', '--t1', required=True, help='Path to the MS patient T1 image to register')
 parser.add_argument('-g', '--t1-gd', required=True, help='Path to the MS patient T1-Gd image to register')
 parser.add_argument('-T', '--t2', default="", help='Path to the MS patient T2 image to register')
+parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
+                    help='Keep intermediate folder after script end')
 
 args = parser.parse_args()
-tmpFolder = tempfile.mkdtemp()
+
+tmpFolder = os.path.join(os.path.dirname(args.reference), 'ms_prepare_' + str(uuid.uuid1()))
+
+if not os.path.isdir(tmpFolder):
+    os.mkdir(tmpFolder)
 
 # Anima commands
 animaPyramidalBMRegistration = os.path.join(animaDir, "animaPyramidalBMRegistration")
@@ -99,4 +105,5 @@ for i in range(0, len(listImages)):
     secondMaskCommand = [animaMaskImage, "-i", nlmSecondImage, "-m", brainMask, "-o", outputPreprocessedFile]
     call(secondMaskCommand)
 
-shutil.rmtree(tmpFolder)
+if not args.keep_intermediate_folder:
+    shutil.rmtree(tmpFolder)
