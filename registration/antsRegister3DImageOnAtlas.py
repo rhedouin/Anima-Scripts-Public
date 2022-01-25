@@ -15,6 +15,7 @@ import numpy as np
 import nibabel as nib
 from subprocess import call
 
+# Anima config
 configFilePath = os.path.join(os.path.expanduser("~"), ".anima",  "config.txt")
 if not os.path.exists(configFilePath):
     print('Please create a configuration file for Anima python scripts. Refer to the README')
@@ -27,8 +28,16 @@ animaDir = configParser.get("anima-scripts", 'anima')
 animaDataDir = configParser.get("anima-scripts", 'extra-data-root')
 animaScriptsDir = configParser.get("anima-scripts", 'anima-scripts-public-root')
 
-antsDir = "/home/rhedouin/Software/ants/bin/ANTS-build/Examples"
-flsDir = "/home/rhedouin/Software/Lead/ext_libs/fsl"
+# ants config
+configFilePath = os.path.join(os.path.expanduser("~"), ".ants",  "config.txt")
+if not os.path.exists(configFilePath):
+    print('Please create a configuration file for ants binaries.')
+    quit()
+
+configParser = ConfParser.RawConfigParser()
+configParser.read(configFilePath)
+
+antsDir = configParser.get("ants-bin", 'ants')
 
 # Argument parsing
 parser = argparse.ArgumentParser(
@@ -51,8 +60,6 @@ animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 
 ANTS = os.path.join(antsDir, "ANTS")
 WarpImageMultiTransform = os.path.join(antsDir, "WarpImageMultiTransform")
-
-flirt = os.path.join(flsDir, "flirt.glnxa64")
 
 # Required
 atlas = args.atlas
