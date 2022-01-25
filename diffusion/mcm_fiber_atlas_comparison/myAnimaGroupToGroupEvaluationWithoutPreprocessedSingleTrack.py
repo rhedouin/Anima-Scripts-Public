@@ -116,4 +116,4 @@ command = [animaFibersDiseaseScores, "-i", os.path.join(outputFolder, outputPref
             "-o", os.path.join(outputFolder, outputPrefix + '_' + track + '_student_t_test_PV_FDR_010.csv'), "-p", "6"]
 call(command)
 
-# shutil.rmtree(tmpFolder)
+shutil.rmtree(tmpFolder)
