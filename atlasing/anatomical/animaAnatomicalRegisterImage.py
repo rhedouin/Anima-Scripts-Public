@@ -62,7 +62,7 @@ call(command)
 command = [animaDenseSVFBMRegistration,"-r",args.ref_image,"-m",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nrrd"),
            "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal.nrrd"),
            "-O",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nrrd"),
-           "--sr","1","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","1"]
+           "--tub","2","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","1"]
 call(command)
 
 if args.rigid is True:

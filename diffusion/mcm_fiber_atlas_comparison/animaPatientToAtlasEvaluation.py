@@ -185,7 +185,7 @@ call(command)
 
 command = [animaDenseTensorSVFBMRegistration, "-r", os.path.join(tmpFolder, "refDTI_c.nrrd"),
            "-m", os.path.join(tmpFolder, dwiPrefix + "_Tensors_aff.nrrd"), "-o", os.path.join(tmpFolder, dwiPrefix + "_nl.nrrd"),
-           "-O", os.path.join(tmpFolder, dwiPrefix + "_nl_tr.nrrd"), "--sr", "1", "--es", "3", "--fs", "2", "--sym-reg", "2", "--metric", "3", "-s", "0.001"]
+           "-O", os.path.join(tmpFolder, dwiPrefix + "_nl_tr.nrrd"), "--tub", "2", "--es", "3", "--fs", "2", "--sym-reg", "2", "--metric", "3", "-s", "0.001"]
 call(command)
 
 # Non linear registration done. Now applying to MCM image

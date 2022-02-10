@@ -108,7 +108,7 @@ command = [animaDenseTensorSVFBMRegistration,"-r",os.path.join(basePrefBase,"tem
            "-m",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_aff.nrrd"),
            "-o",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal.nrrd"),
            "-O",os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_bal_tr.nrrd"),
-           "--sr","1","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","3","-s","0.001"]
+           "--tub","2","--es","3","--fs","2","-T",str(args.num_cores),"--sym-reg","2","--metric","3","-s","0.001"]
 call(command)
 
 os.remove(os.path.join(basePrefBase,"tempDir",args.prefix + "_" + str(args.num_image) + "_ref_c.nrrd"))

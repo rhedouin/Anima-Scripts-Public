@@ -40,6 +40,7 @@ parser.add_argument('-S', '--second-step', action='store_true',
                     help="Perform second step of atlas based cropping (might crop part of the external part of the brain)")
 
 parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
+parser.add_argument('-a', '--atlas', type=str, help='Prefix of the atlas')
 parser.add_argument('-m', '--mask', type=str, help='Output path of the brain mask (default is inputName_brainMask.nrrd)')
 parser.add_argument('-b', '--brain', type=str, help='Output path of the masked brain (default is inputName_masked.nrrd)')
 parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
@@ -99,7 +100,7 @@ command = [animaPyramidalBMRegistration, "-m", atlasImage, "-r", brainImage, "-o
 call(command)
 
 command = [animaDenseSVFBMRegistration, "-r", brainImage, "-m", brainImagePrefix + "_aff.nrrd", "-o",
-           brainImagePrefix + "_nl.nrrd", "-O", brainImagePrefix + "_nl_tr.nrrd", "--sr", "1"] + pyramidOptions
+           brainImagePrefix + "_nl.nrrd", "-O", brainImagePrefix + "_nl_tr.nrrd", "--tub", "2"] + pyramidOptions
 call(command)
 
 command = [animaTransformSerieXmlGenerator, "-i", brainImagePrefix + "_aff_tr.txt", "-i",
@@ -128,7 +129,7 @@ if args.second_step is True:
     call(command)
 
     command = [animaDenseSVFBMRegistration, "-r", brainImageRoughMasked, "-m", brainImagePrefix + "_aff.nrrd", "-o",
-               brainImagePrefix + "_nl.nrrd", "-O", brainImagePrefix + "_nl_tr.nrrd", "--sr", "1"] + pyramidOptions
+               brainImagePrefix + "_nl.nrrd", "-O", brainImagePrefix + "_nl_tr.nrrd", "--tub", "2"] + pyramidOptions
     call(command)
 
     command = [animaApplyTransformSerie, "-i", iccImage, "-t", brainImagePrefix + "_nl_tr.xml", "-g", brainImage, "-o",
