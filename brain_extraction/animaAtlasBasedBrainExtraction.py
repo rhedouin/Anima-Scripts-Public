@@ -31,6 +31,7 @@ animaTransformSerieXmlGenerator = os.path.join(animaDir, "animaTransformSerieXml
 animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 animaConvertImage = os.path.join(animaDir, "animaConvertImage")
 animaMaskImage = os.path.join(animaDir, "animaMaskImage")
+animaCreateImage = os.path.join(animaDir, "animaCreateImage")
 
 # Argument parsing
 parser = argparse.ArgumentParser(
@@ -40,7 +41,7 @@ parser.add_argument('-S', '--second-step', action='store_true',
                     help="Perform second step of atlas based cropping (might crop part of the external part of the brain)")
 
 parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
-parser.add_argument('-a', '--atlas', type=str, help='Prefix of the atlas')
+parser.add_argument('-a', '--atlas', type=str, help='Atlas folder (default: use the adult one in anima scripts data')
 parser.add_argument('-m', '--mask', type=str, help='Output path of the brain mask (default is inputName_brainMask.nrrd)')
 parser.add_argument('-b', '--brain', type=str, help='Output path of the masked brain (default is inputName_masked.nrrd)')
 parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
@@ -49,9 +50,14 @@ parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
 args = parser.parse_args()
 
 numImages = len(sys.argv) - 1
-atlasImage = animaExtraDataDir + "icc_atlas/Reference_T1.nrrd"
-atlasImageMasked = animaExtraDataDir + "icc_atlas/Reference_T1_masked.nrrd"
-iccImage = animaExtraDataDir + "icc_atlas/BrainMask.nrrd"
+
+atlasDir = os.path.join(animaExtraDataDir,"icc_atlas")
+if not args.atlas == "":
+    atlasDir = args.atlas
+
+atlasImage = os.path.join(atlasDir,"Reference_T1.nrrd")
+atlasImageMasked = os.path.join(atlasDir,"Reference_T1_masked.nrrd")
+iccImage = os.path.join(atlasDir,"BrainMask.nrrd")
 
 brainImage = args.input
 
@@ -99,8 +105,24 @@ command = [animaPyramidalBMRegistration, "-m", atlasImage, "-r", brainImage, "-o
            "2"] + pyramidOptions
 call(command)
 
-command = [animaDenseSVFBMRegistration, "-r", brainImage, "-m", brainImagePrefix + "_aff.nrrd", "-o",
-           brainImagePrefix + "_nl.nrrd", "-O", brainImagePrefix + "_nl_tr.nrrd", "--tub", "2"] + pyramidOptions
+command = [animaCreateImage, "-g", atlasImage, "-b", "1", "-o", brainImagePrefix + "_baseCropMask.nrrd"]
+call(command)
+
+command = [animaTransformSerieXmlGenerator, "-i", brainImagePrefix + "_aff_tr.txt",
+           "-o", brainImagePrefix + "_aff_tr.xml"]
+call(command)
+
+command = [animaApplyTransformSerie, "-i", brainImagePrefix + "_baseCropMask.nrrd",
+           "-t", brainImagePrefix + "_aff_tr.xml", "-g", brainImage, "-o",
+           brainImagePrefix + "_cropMask.nrrd", "-n", "nearest"]
+call(command)
+
+command = [animaMaskImage, "-i", brainImage, "-m", brainImagePrefix + "_cropMask.nrrd",
+           "-o", brainImagePrefix + "_c.nrrd"]
+call(command)
+
+command = [animaDenseSVFBMRegistration, "-r", brainImagePrefix + "_c.nrrd", "-m", brainImagePrefix + "_aff.nrrd",
+           "-o", brainImagePrefix + "_nl.nrrd", "-O", brainImagePrefix + "_nl_tr.nrrd", "--tub", "2"] + pyramidOptions
 call(command)
 
 command = [animaTransformSerieXmlGenerator, "-i", brainImagePrefix + "_aff_tr.txt", "-i",
