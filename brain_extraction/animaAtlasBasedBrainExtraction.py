@@ -37,6 +37,9 @@ animaCreateImage = os.path.join(animaDir, "animaCreateImage")
 parser = argparse.ArgumentParser(
     description="Computes the brain mask of images given in input by registering a known atlas on it. Their output is prefix_brainMask.nrrd and prefix_masked.nrrd")
 
+parser.add_argument('-L', '--large-fov', action='store_true',
+                    help="Specify additional processing to handle large FOV of the input image (typically for babies)."
+                         "The atlas must include in that case a large FOV T1w image named: Reference_T1_largeFOV.nrrd")
 parser.add_argument('-S', '--second-step', action='store_true',
                     help="Perform second step of atlas based cropping (might crop part of the external part of the brain)")
 
@@ -56,6 +59,8 @@ if not args.atlas == "":
     atlasDir = args.atlas
 
 atlasImage = os.path.join(atlasDir,"Reference_T1.nrrd")
+atlasLargeFOVImage = os.path.join(atlasDir,"Reference_T1_largeFOV.nrrd")
+atlasLargeFOVHeadMask = os.path.join(atlasDir,"Reference_T1_HeadMask.nrrd")
 atlasImageMasked = os.path.join(atlasDir,"Reference_T1_masked.nrrd")
 iccImage = os.path.join(atlasDir,"BrainMask.nrrd")
 
@@ -95,9 +100,38 @@ pyramidOptions = ["-p", "4", "-l", "1"]
 if large_image:
     pyramidOptions = ["-p", "5", "-l", "2"]
 
+# If large FOV image, use the large FOV part of the atlas
+fovOptions = []
+if args.large_fov is True:
+    command = [animaPyramidalBMRegistration, "-m", atlasLargeFOVImage, "-r", brainImage,
+               "-o", brainImagePrefix + "_lfov_rig.nrrd",
+               "-O", brainImagePrefix + "_lfov_rig_tr.txt", "--sp", "3"] + pyramidOptions
+    call(command)
+
+    command = [animaPyramidalBMRegistration, "-m", atlasLargeFOVImage, "-r", brainImage,
+               "-o", brainImagePrefix + "_lfov_aff.nrrd",
+               "-O", brainImagePrefix + "_lfov_aff_tr.txt", "-i", brainImagePrefix + "_lfov_rig_tr.txt", "--sp", "3",
+               "--ot", "2"] + pyramidOptions
+    call(command)
+
+    command = [animaTransformSerieXmlGenerator, "-i", brainImagePrefix + "_lfov_aff_tr.txt",
+               "-o", brainImagePrefix + "_lfov_aff_tr.xml"]
+    call(command)
+
+    command = [animaApplyTransformSerie, "-i", atlasLargeFOVHeadMask, "-t", brainImagePrefix + "_lfov_aff_tr.xml",
+               "-o", brainImagePrefix + "_lfov_cropMask.nrrd", "-g", brainImage, "-n", "nearest"]
+    call(command)
+
+    command = [animaMaskImage, "-i", brainImage, "-m", brainImagePrefix + "_lfov_cropMask.nrrd",
+               "-o", brainImagePrefix + "_lfov_cropped.nrrd"]
+    call(command)
+
+    brainImage = brainImagePrefix + "_lfov_cropped.nrrd"
+    fovOptions = ["-i", brainImagePrefix + "_lfov_aff_tr.txt"]
+
 # Rough mask with whole brain
 command = [animaPyramidalBMRegistration, "-m", atlasImage, "-r", brainImage, "-o", brainImagePrefix + "_rig.nrrd",
-           "-O", brainImagePrefix + "_rig_tr.txt", "--sp", "3"] + pyramidOptions
+           "-O", brainImagePrefix + "_rig_tr.txt", "--sp", "3"] + pyramidOptions + fovOptions
 call(command)
 
 command = [animaPyramidalBMRegistration, "-m", atlasImage, "-r", brainImage, "-o", brainImagePrefix + "_aff.nrrd",
