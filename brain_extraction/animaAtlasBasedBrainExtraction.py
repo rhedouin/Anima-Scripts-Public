@@ -55,7 +55,7 @@ args = parser.parse_args()
 numImages = len(sys.argv) - 1
 
 atlasDir = os.path.join(animaExtraDataDir,"icc_atlas")
-if not args.atlas == "":
+if args.atlas:
     atlasDir = args.atlas
 
 atlasImage = os.path.join(atlasDir,"Reference_T1.nrrd")
