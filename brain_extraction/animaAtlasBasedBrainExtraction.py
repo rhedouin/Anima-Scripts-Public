@@ -32,6 +32,7 @@ animaApplyTransformSerie = os.path.join(animaDir, "animaApplyTransformSerie")
 animaConvertImage = os.path.join(animaDir, "animaConvertImage")
 animaMaskImage = os.path.join(animaDir, "animaMaskImage")
 animaCreateImage = os.path.join(animaDir, "animaCreateImage")
+animaMorphologicalOperations = os.path.join(animaDir, "animaMorphologicalOperations")
 
 # Argument parsing
 parser = argparse.ArgumentParser(
@@ -44,7 +45,8 @@ parser.add_argument('-S', '--second-step', action='store_true',
                     help="Perform second step of atlas based cropping (might crop part of the external part of the brain)")
 
 parser.add_argument('-i', '--input', type=str, required=True, help='File to process')
-parser.add_argument('-a', '--atlas', type=str, help='Atlas folder (default: use the adult one in anima scripts data')
+parser.add_argument('-a', '--atlas', type=str, help='Atlas folder (default: use the adult one in anima scripts data '
+                                                    '- icc_atlas folder)')
 parser.add_argument('-m', '--mask', type=str, help='Output path of the brain mask (default is inputName_brainMask.nrrd)')
 parser.add_argument('-b', '--brain', type=str, help='Output path of the masked brain (default is inputName_masked.nrrd)')
 parser.add_argument('-K', '--keep-intermediate-folder', action='store_true',
@@ -61,8 +63,9 @@ if args.atlas:
 atlasImage = os.path.join(atlasDir,"Reference_T1.nrrd")
 atlasLargeFOVImage = os.path.join(atlasDir,"Reference_T1_largeFOV.nrrd")
 atlasLargeFOVHeadMask = os.path.join(atlasDir,"Reference_T1_HeadMask.nrrd")
-atlasImageMasked = os.path.join(atlasDir,"Reference_T1_masked.nrrd")
+atlasImageFromMasked = os.path.join(atlasDir,"Reference_T1_from_masked.nrrd")
 iccImage = os.path.join(atlasDir,"BrainMask.nrrd")
+iccImageFromMasked = os.path.join(atlasDir,"BrainMask_from_masked.nrrd")
 
 brainImage = args.input
 
@@ -175,21 +178,29 @@ brainImageRoughMasked = brainImagePrefix + "_rough_masked.nrrd"
 
 if args.second_step is True:
     # Fine mask with masked brain
-    command = [animaPyramidalBMRegistration, "-m", atlasImageMasked, "-r", brainImageRoughMasked, "-o",
-               brainImagePrefix + "_rig.nrrd", "-O", brainImagePrefix + "_rig_tr.txt", "--sp", "3"] + pyramidOptions
+    command = [animaMorphologicalOperations, "-i", brainImagePrefix + "_rough_brainMask.nrrd",
+               "-o", brainImagePrefix + "_rough_brainMask_dil.nrrd", "-a", "dil", "-r", "5", "-R"]
     call(command)
 
-    command = [animaPyramidalBMRegistration, "-m", atlasImageMasked, "-r", brainImageRoughMasked, "-o",
-               brainImagePrefix + "_aff.nrrd", "-O", brainImagePrefix + "_aff_tr.txt", "-i",
-               brainImagePrefix + "_rig_tr.txt", "--sp", "3", "--ot", "2"] + pyramidOptions
+    command = [animaMaskImage, "-i", brainImage, "-m", brainImagePrefix + "_rough_brainMask_dil.nrrd", "-o",
+               brainImageRoughMasked]
     call(command)
 
-    command = [animaDenseSVFBMRegistration, "-r", brainImageRoughMasked, "-m", brainImagePrefix + "_aff.nrrd", "-o",
-               brainImagePrefix + "_nl.nrrd", "-O", brainImagePrefix + "_nl_tr.nrrd", "--tub", "2"] + pyramidOptions
+    command = [animaPyramidalBMRegistration, "-m", atlasImageFromMasked, "-r", brainImageRoughMasked, "-o",
+               brainImagePrefix + "_masked_aff.nrrd", "-O", brainImagePrefix + "_masked_aff_tr.txt", "-i",
+               brainImagePrefix + "_aff_tr.txt", "--sp", "3", "--ot", "2"] + pyramidOptions
     call(command)
 
-    command = [animaApplyTransformSerie, "-i", iccImage, "-t", brainImagePrefix + "_nl_tr.xml", "-g", brainImage, "-o",
-               brainMask, "-n", "nearest"]
+    command = [animaDenseSVFBMRegistration, "-r", brainImageRoughMasked, "-m", brainImagePrefix + "_masked_aff.nrrd", "-o",
+               brainImagePrefix + "_masked_nl.nrrd", "-O", brainImagePrefix + "_masked_nl_tr.nrrd", "--tub", "2"] + pyramidOptions
+    call(command)
+
+    command = [animaTransformSerieXmlGenerator, "-i", brainImagePrefix + "_masked_aff_tr.txt", "-i",
+               brainImagePrefix + "_masked_nl_tr.nrrd", "-o", brainImagePrefix + "_masked_nl_tr.xml"]
+    call(command)
+
+    command = [animaApplyTransformSerie, "-i", iccImageFromMasked, "-t", brainImagePrefix + "_masked_nl_tr.xml",
+               "-g", brainImage, "-o", brainMask, "-n", "nearest"]
     call(command)
 
     command = [animaMaskImage, "-i", brainImage, "-m", brainMask, "-o", maskedBrain]
