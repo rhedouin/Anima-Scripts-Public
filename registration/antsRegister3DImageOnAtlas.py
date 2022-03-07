@@ -89,7 +89,7 @@ bmRegistrationCommand = [animaPyramidalBMRegistration, "-r", atlas, "-m", t1,  "
 call(bmRegistrationCommand)
 
 print("ANTS")
-antsRegistrationCommand = [ANTS, "3", "-m", "CC[" + atlas + "," + os.path.join(trsfFolder, label + "_T1_rigid2" + atlasName + "_" + dataNum + ".nii.gz") + ",1,4]", "-o", os.path.join(trsfFolder, label + "_T1_nl_tr_" + atlasName + "_" + dataNum), "-i", "75x75x10", "-r", "Gauss[3,0]", "-t", "SyN[0.25]", "--number-of-affine-iterations", "0"]
+antsRegistrationCommand = [ANTS, "3", "-m", "CC[" + atlas + "," + os.path.join(trsfFolder, label + "_T1_rigid2" + atlasName + "_" + dataNum + ".nii.gz") + ",1.5,4]", "-o", os.path.join(trsfFolder, label + "_T1_nl_tr_" + atlasName + "_" + dataNum), "-i", "75x75x10", "-r", "Gauss[3,0]", "-t", "SyN[0.25]", "--number-of-affine-iterations", "0"]
 call(antsRegistrationCommand)
 
 print("WarpImageMultiTransform")
@@ -107,7 +107,7 @@ call(trsfGeneratorCommand)
 
 os.makedirs(os.path.join(outputFolder, atlasFolder, "Transformed_T0"), exist_ok=True)
 print("applyTransformCommand")
-applyTransformCommand = [animaApplyTransformSerie, "-i", mv, "-g", atlas, "-t", os.path.join(trsfFolder, label + "_T0_transf_" + atlasName + "_" + dataNum + ".xlm"), "-o", os.path.join(outputFolder, atlasFolder, "Transformed_T0", label + "_DWI_" + dataNum + "T0_on" + atlasName + ".nii.gz")]
+applyTransformCommand = [animaApplyTransformSerie, "-i", mv, "-g", atlas, "-t", os.path.join(trsfFolder, label + "_T0_transf_" + atlasName + "_" + dataNum + ".xlm"), "-o", os.path.join(outputFolder, atlasFolder, "Transformed_T0", label + "_DWI_" + dataNum + "_T0_on" + atlasName + ".nii.gz")]
 call(applyTransformCommand)
 
 
