@@ -46,8 +46,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-a', '--atlas', type=str, required=True, help='atlas t1')
 parser.add_argument('-t', '--subject-t1', type=str, required=True, help='subject t1')
 parser.add_argument('-m', '--subject-mv', type=str, required=True, help='subject moving image')
-parser.add_argument('-n', '--subject-id', type=str, required=True, help='subject identity')
-
+parser.add_argument('-l', '--label', type=str, required=False, default="",  help='suffix')
+parser.add_argument('--data-num', type=str, required=True, default="",  help='subject data number')
 parser.add_argument('--output-folder', type=str, default="", help='Specify a output folder')
 parser.add_argument('--trsf-folder', type=str, default="Trsf", help='Specify a trsf folder name')
 parser.add_argument('--atlas-name', type=str, default="", help='Atlas suffix output')
@@ -74,7 +74,7 @@ mvPrefix = os.path.basename(args.subject_mv).split(".")[0]
 dataNum = args.data_num
 
 # Optionnal
-subjectPrefix = args.subject_id
+label = args.label
 outputFolder = args.output_folder
 trsfFolder = args.trsf_folder
 atlasName = args.atlas_name
@@ -85,29 +85,29 @@ os.makedirs(trsfFolder, exist_ok=True)
 
 # Registration T1 subject -> atlas
 print("BM")
-bmRegistrationCommand = [animaPyramidalBMRegistration, "-r", atlas, "-m", t1,  "-o",  os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2" + atlasName + ".nii.gz"), "-O", os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2" + atlasName + ".txt"), "-p", "3", "-l", "0", "--sp", "2", "--ot", "2"]
+bmRegistrationCommand = [animaPyramidalBMRegistration, "-r", atlas, "-m", t1,  "-o",  os.path.join(trsfFolder, label + "_T1_rigid2" + atlasName + "_" + dataNum + ".nii.gz"), "-O", os.path.join(trsfFolder, label + "_T1_rigid2" + atlasName + "_" + dataNum + ".txt"), "-p", "3", "-l", "0", "--sp", "2", "--ot", "2"]
 call(bmRegistrationCommand)
 
 print("ANTS")
-antsRegistrationCommand = [ANTS, "3", "-m", "CC[" + atlas + "," + os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2" + atlasName + ".nii.gz") + ",1.5,4]", "-o", os.path.join(trsfFolder, subjectPrefix + "_T1_nl_tr_" + atlasName), "-i", "75x75x10", "-r", "Gauss[3,0]", "-t", "SyN[0.25]", "--number-of-affine-iterations", "0"]
+antsRegistrationCommand = [ANTS, "3", "-m", "CC[" + atlas + "," + os.path.join(trsfFolder, label + "_T1_rigid2" + atlasName + "_" + dataNum + ".nii.gz") + ",1.5,4]", "-o", os.path.join(trsfFolder, label + "_T1_nl_tr_" + atlasName + "_" + dataNum), "-i", "75x75x10", "-r", "Gauss[3,0]", "-t", "SyN[0.25]", "--number-of-affine-iterations", "0"]
 call(antsRegistrationCommand)
 
 print("WarpImageMultiTransform")
-warpImageCommand = [WarpImageMultiTransform, "3", os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2" + atlasName + ".nii.gz"), os.path.join(trsfFolder, subjectPrefix + "_T1_nl_on" + atlasName + ".nii.gz"), "-R", atlas, os.path.join(trsfFolder, subjectPrefix + "_T1_nl_tr_" + atlasName + "_Warp.nii.gz"), os.path.join(trsfFolder, subjectPrefix + "_T1_nl_tr_" + atlasName + "_Affine.txt")]
+warpImageCommand = [WarpImageMultiTransform, "3", os.path.join(trsfFolder, label + "_T1_rigid2" + atlasName + "_" + dataNum + ".nii.gz"), os.path.join(trsfFolder, label + "_T1_nl_" + dataNum + "_on" + atlasName + ".nii.gz"), "-R", atlas, os.path.join(trsfFolder, label + "_T1_nl_tr_" + atlasName + "_" + dataNum + "Warp.nii.gz"), os.path.join(trsfFolder, label + "_T1_nl_tr_" + atlasName + "_" + dataNum + "Affine.txt")]
 call(warpImageCommand)
 
 # Registration T0 subject -> T1 subject
 print("BM")
-bmRegistrationCommand = [animaPyramidalBMRegistration, "-r", mv, "-m", t1,  "-o",  os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2T0.nii.gz"), "-O", os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2T0.txt"), "-p", "3", "-l", "0", "--sp", "2", "--ot", "2"]
+bmRegistrationCommand = [animaPyramidalBMRegistration, "-r", mv, "-m", t1,  "-o",  os.path.join(trsfFolder, label + "_T1_rigid2T0_" + dataNum + ".nii.gz"), "-O", os.path.join(trsfFolder, label + "_T1_rigid2T0_" + dataNum + ".txt"), "-p", "3", "-l", "0", "--sp", "2", "--ot", "2"]
 call(bmRegistrationCommand)
 
 print("trsfGeneratorCommand")
-trsfGeneratorCommand = [animaTransformSerieXmlGenerator, "-i", os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2T0.txt"), "-I", "1", "-i", os.path.join(trsfFolder, subjectPrefix + "_T1_rigid2" + atlasName + ".txt"), "-I", "0", "-i", os.path.join(trsfFolder, subjectPrefix + "_T1_nl_tr_" + atlasName + "_Warp.nii.gz"), "-D", "-I", "0", "-o", os.path.join(trsfFolder, subjectPrefix + "_T0_transf_" + atlasName + ".xlm")]
+trsfGeneratorCommand = [animaTransformSerieXmlGenerator, "-i", os.path.join(trsfFolder, label + "_T1_rigid2T0_" + dataNum + ".txt"), "-I", "1", "-i", os.path.join(trsfFolder, label + "_T1_rigid2" + atlasName + "_" + dataNum + ".txt"), "-I", "0", "-i", os.path.join(trsfFolder, label + "_T1_nl_tr_" + atlasName + "_" + dataNum + "Warp.nii.gz"), "-D", "-I", "0", "-o", os.path.join(trsfFolder, label + "_T0_transf_" + atlasName + "_" + dataNum + ".xlm")]
 call(trsfGeneratorCommand)
 
 os.makedirs(os.path.join(outputFolder, atlasFolder, "Transformed_T0"), exist_ok=True)
 print("applyTransformCommand")
-applyTransformCommand = [animaApplyTransformSerie, "-i", mv, "-g", atlas, "-t", os.path.join(trsfFolder, subjectPrefix + "_T0_transf_" + atlasName + ".xlm"), "-o", os.path.join(outputFolder, atlasFolder, "Transformed_T0", subjectPrefix + "_DWI_T0_on" + atlasName + ".nii.gz")]
+applyTransformCommand = [animaApplyTransformSerie, "-i", mv, "-g", atlas, "-t", os.path.join(trsfFolder, label + "_T0_transf_" + atlasName + "_" + dataNum + ".xlm"), "-o", os.path.join(outputFolder, atlasFolder, "Transformed_T0", label + "_DWI_" + dataNum + "_T0_on" + atlasName + ".nii.gz")]
 call(applyTransformCommand)
 
 
